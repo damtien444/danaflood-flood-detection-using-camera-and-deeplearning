@@ -4,6 +4,8 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
+from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
+    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS
 from model import UNET
 from datetime import datetime
 
@@ -11,19 +13,7 @@ from utils import load_checkpoint, save_checkpoint, get_loaders, check_accuracy,
 
 # Hyperparameter etc.
 
-LEARNING_RATE = 1e-4
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 4
-NUM_EPOCHS = 3
-NUM_WORKERS = 2
-IMAGE_HEIGHT = 160
-IMAGE_WIDTH = 240
-PIN_MEMORY = True
-LOAD_MODEL = False
-TRAIN_IMG_DIR = r"C:\Users\damti\OneDrive - The University of Technology\Desktop\Study\Do an tot nghiep\Working space _ DATN\contruction\data\train"
-TRAIN_MASK_DIR = r"C:\Users\damti\OneDrive - The University of Technology\Desktop\Study\Do an tot nghiep\Working space _ DATN\contruction\data\train_masks"
-VAL_IMG_DIR = ""
-VAL_MASK_DIR = ""
+
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -75,8 +65,6 @@ def main():
         ]
     )
 
-
-
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -113,7 +101,7 @@ def main():
         check_accuracy(val_loader, model, device=DEVICE)
 
         # print example
-        save_predictions_as_imgs(val_loader, model, folder="saved_images/", device=DEVICE)
+        save_predictions_as_imgs(val_loader, model, folder=r"", device=DEVICE)
 
 if __name__ == "__main__":
     main()
