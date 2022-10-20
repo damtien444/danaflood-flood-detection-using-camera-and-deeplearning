@@ -8,7 +8,10 @@ class CarvanaDataset(Dataset):
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.transform = transform
-        self.images = os.listdir(image_dir)
+        self.images = []
+        for im in os.listdir(image_dir):
+            if "mask" not in im:
+              self.images.append(im)
 
     def __len__(self):
         return len(self.images)
