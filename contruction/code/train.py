@@ -8,6 +8,7 @@ from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_D
     NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS
 from model import UNET
 from datetime import datetime
+import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, check_accuracy, save_predictions_as_imgs
 
@@ -37,9 +38,12 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
+        wandb.log({"loss": loss})
 
 
 def main():
+
+    wandb.init(project="UNET_FLOOD", entity="damtien440")
 
     train_transform = A.Compose(
         [
@@ -68,6 +72,8 @@ def main():
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+    wandb.watch(model, optimizer, log="all")
 
     train_loader, val_loader = get_loaders(
         train_dir=TRAIN_IMG_DIR,

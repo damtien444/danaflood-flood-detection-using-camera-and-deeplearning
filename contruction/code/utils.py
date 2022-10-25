@@ -2,7 +2,7 @@ import torch
 import torchvision
 from dataset import CarvanaDataset
 from torch.utils.data import DataLoader, random_split
-
+import wandb
 
 def save_checkpoint(state, filename='mycheckpoint.pth.tar'):
     print("=> Saving checkpoint")
@@ -63,6 +63,8 @@ def check_accuracy(loader, model, device="cuda"):
 
     print(f'Got {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
     print(f'Dice score: {dice_score / len(loader)}')
+    wandb.log({'acc_train': num_correct / num_pixels * 100})
+    wandb.log({'dice': dice_score / len(loader)})
     model.train()
 
 
