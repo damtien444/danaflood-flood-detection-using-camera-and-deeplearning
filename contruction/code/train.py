@@ -1,3 +1,5 @@
+import os
+
 import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -5,7 +7,7 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
-    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS
+    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab
 from model import UNET
 from datetime import datetime
 import wandb
@@ -108,6 +110,9 @@ def main():
 
         # print example
         save_predictions_as_imgs(val_loader, model, folder=r"", device=DEVICE)
+        if is_colab:
+            os.system("cp /content/danaflood-flood-detection-using-camera-and-deeplearning/my_checkpoint.pth.tar /content/drive/MyDrive")
+
 
 if __name__ == "__main__":
     main()
