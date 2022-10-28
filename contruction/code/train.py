@@ -6,6 +6,8 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
+
+from code.loss import DiceBCELoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
     NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab
 from model import UNET
@@ -72,7 +74,8 @@ def main():
     )
 
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
-    loss_fn = nn.BCEWithLogitsLoss()
+    # loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = DiceBCELoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     wandb.watch(model, optimizer, log="all")
@@ -116,3 +119,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

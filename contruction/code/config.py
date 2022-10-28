@@ -7,8 +7,8 @@ NUM_EPOCHS = 3
 NUM_WORKERS = 2
 
 # image size must be divisible by 32, because U-Net structure has 5 bi-down_sample
-IMAGE_HEIGHT = 256
-IMAGE_WIDTH = 256
+IMAGE_HEIGHT = 512
+IMAGE_WIDTH = 512
 
 PIN_MEMORY = True
 LOAD_MODEL = False

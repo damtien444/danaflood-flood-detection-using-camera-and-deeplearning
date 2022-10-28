@@ -10,7 +10,9 @@ class DoubleConv(nn.Module):
             nn.Conv2d(in_channels, out_channels, (3, 3), (1, 1), 1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
+
             nn.Dropout(dropout),
+
             nn.Conv2d(out_channels, out_channels, (3, 3), (1, 1), 1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
@@ -31,7 +33,7 @@ class UNET(nn.Module):
     def __init__(self
                  , in_channels=3
                  , out_channels=1
-                 , features=[64, 128, 256, 512, 1024]):
+                 , features=[16, 32, 64, 128, 256]):
         super(UNET, self).__init__()
         self.ups = nn.ModuleList()
         self.downs = nn.ModuleList()
@@ -45,7 +47,7 @@ class UNET(nn.Module):
         # decoding parts
         for feature in reversed(features):
             self.ups.append(
-                nn.ConvTranspose2d(feature * 2, feature, kernel_size=2, stride=2)
+                nn.ConvTranspose2d(feature * 2, feature, kernel_size=3, stride=2)
             )
             self.ups.append(DoubleConv(feature * 2, feature))
 
@@ -82,7 +84,7 @@ class UNET(nn.Module):
 
 
 def test():
-    x = torch.randn((3, 1, 256, 256))
+    x = torch.randn((3, 1, 512, 512))
     model = UNET(in_channels=1, out_channels=1)
     preds = model(x)
     print(preds.shape)
