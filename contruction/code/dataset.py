@@ -41,7 +41,7 @@ class CarvanaDataset(Dataset):
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 
         # label has to be convert from 0-255 to range 0-1
-        mask[mask == 255.0] = 1
+        mask[mask != 0] = 1
 
         if self.transform is not None:
             augmentations = self.transform(image=image, mask=mask)

@@ -67,6 +67,8 @@ def check_accuracy(loader, model, device="cuda"):
     wandb.log({'dice': dice_score / len(loader)})
     model.train()
 
+    return num_correct/num_pixels
+
 
 def save_predictions_as_imgs(
         loader, model, folder="saved_images/", device="cuda"

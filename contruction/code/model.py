@@ -4,7 +4,7 @@ import torchvision.transforms.functional as TF
 
 
 class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels, dropout=0, residual=False):
+    def __init__(self, in_channels, out_channels, dropout=0, residual=False, down=False):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, (3, 3), (1, 1), 1, bias=False),
@@ -19,13 +19,14 @@ class DoubleConv(nn.Module):
         )
 
         self.residual = residual
+        self.down = down
 
         # self.conv = nn.Conv2d(in_channels, out_channels, (3,3), (1,1), 1, bias= False)
         # self.bn = nn.BatchNorm2d()
 
     def forward(self, x):
-        if self.residual:
-            return torch.cat((self.conv(x), x), dim=1)
+        if self.residual and self.down:
+            return torch.max_pool2d(torch.cat((self.conv(x), x), dim=1), (2, 2))
         return self.conv(x)
 
 
@@ -40,19 +41,27 @@ class UNET(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         # encoding parts
-        for feature in features:
-            self.downs.append(DoubleConv(in_channels, feature))
+        for idx, feature in enumerate(features):
+            if idx in [3, 4]:
+                drop_out = 0.5
+            else:
+                drop_out = 0
+            self.downs.append(DoubleConv(in_channels, feature, down=True, dropout=drop_out))
             in_channels = feature
 
         # decoding parts
-        for feature in reversed(features):
+        for idx, feature in enumerate(reversed(features)):
+            if idx in [0, 1]:
+                drop_out = 0.5
+            else:
+                drop_out = 0
             self.ups.append(
                 nn.ConvTranspose2d(feature * 2, feature, kernel_size=3, stride=2)
             )
-            self.ups.append(DoubleConv(feature * 2, feature))
+            self.ups.append(DoubleConv(feature * 2, feature, dropout=drop_out))
 
         # TODO: modify bottleneck to similar as paper
-        self.bottleneck = DoubleConv(features[-1], features[-1] * 2)
+        self.bottleneck = DoubleConv(features[-1], features[-1] * 2, dropout=0.5)
 
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
@@ -84,12 +93,13 @@ class UNET(nn.Module):
 
 
 def test():
-    x = torch.randn((3, 1, 512, 512))
-    model = UNET(in_channels=1, out_channels=1)
+    x = torch.randn((3, 3, 512, 512))
+    # torch.reshape(x, [3, 512, 512])
+    model = UNET(in_channels=3, out_channels=1)
     preds = model(x)
     print(preds.shape)
     print(x.shape)
-    assert preds.shape == x.shape
+    # assert preds.shape == x.shape
 
 
 if __name__ == "__main__":

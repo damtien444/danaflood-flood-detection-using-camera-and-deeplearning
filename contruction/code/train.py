@@ -32,6 +32,10 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
         # forward
         with torch.cuda.amp.autocast():
             predictions = model(data)
+
+            # preds = torch.sigmoid(predictions)
+            # preds = (preds > 0.5).float()
+
             loss = loss_fn(predictions, targets)
 
         # backward
@@ -94,8 +98,10 @@ def main():
         load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
 
     scaler = torch.cuda.amp.GradScaler()
-
+    best_perform = 0
     for epoch in range(NUM_EPOCHS):
+
+
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
         # save model
@@ -106,15 +112,18 @@ def main():
 
         now = datetime.now()
         # save_checkpoint(checkpoint, filename=f'my_checkpoint_{now.strftime("%Y_%m_%d_%H_%M_%S")}')
-        save_checkpoint(checkpoint, filename=f'my_checkpoint.pth.tar')
+
 
         # check acc
-        check_accuracy(val_loader, model, device=DEVICE)
+        acc = check_accuracy(val_loader, model, device=DEVICE)
+        if best_perform < acc:
+            best_perform = acc
+            save_checkpoint(checkpoint, filename=f'my_checkpoint.pth.tar')
+            if is_colab:
+                os.system("cp /content/danaflood-flood-detection-using-camera-and-deeplearning/my_checkpoint.pth.tar /content/drive/MyDrive")
 
         # print example
         save_predictions_as_imgs(val_loader, model, folder=r"", device=DEVICE)
-        if is_colab:
-            os.system("cp /content/danaflood-flood-detection-using-camera-and-deeplearning/my_checkpoint.pth.tar /content/drive/MyDrive")
 
 
 if __name__ == "__main__":
