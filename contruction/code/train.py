@@ -9,7 +9,7 @@ import torch.optim as optim
 
 from loss import DiceBCELoss, DiceLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
-    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab
+    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab, EXPERIMENT_NAME
 from model import UNET
 from datetime import datetime
 import wandb
@@ -118,9 +118,9 @@ def main():
         acc = check_accuracy(val_loader, model, device=DEVICE)
         if best_perform < acc:
             best_perform = acc
-            save_checkpoint(checkpoint, filename=f'my_checkpoint.pth.tar')
+            save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')
             if is_colab:
-                os.system("cp /content/danaflood-flood-detection-using-camera-and-deeplearning/my_checkpoint.pth.tar /content/drive/MyDrive")
+                os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
 
         # print example
         save_predictions_as_imgs(val_loader, model, folder=r"", device=DEVICE)
