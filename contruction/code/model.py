@@ -18,6 +18,11 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
         )
 
+        self.conv_skip = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=(3,3), stride=(1,1), padding=1),
+            nn.BatchNorm2d(out_channels),
+        )
+
         self.residual = residual
         self.down = down
 
@@ -25,8 +30,9 @@ class DoubleConv(nn.Module):
         # self.bn = nn.BatchNorm2d()
 
     def forward(self, x):
-        if self.residual and self.down:
-            return torch.max_pool2d(torch.cat((self.conv(x), x), dim=1), (2, 2))
+        if self.residual:
+            return self.conv(x) + self.conv_skip(x)
+
         return self.conv(x)
 
 
@@ -46,7 +52,7 @@ class UNET(nn.Module):
                 drop_out = 0.5
             else:
                 drop_out = 0
-            self.downs.append(DoubleConv(in_channels, feature, down=True, dropout=drop_out))
+            self.downs.append(DoubleConv(in_channels, feature, down=True, dropout=drop_out, residual=True))
             in_channels = feature
 
         # decoding parts
@@ -55,10 +61,11 @@ class UNET(nn.Module):
                 drop_out = 0.5
             else:
                 drop_out = 0
+
             self.ups.append(
                 nn.ConvTranspose2d(feature * 2, feature, kernel_size=3, stride=2)
             )
-            self.ups.append(DoubleConv(feature * 2, feature, dropout=drop_out))
+            self.ups.append(DoubleConv(feature * 2, feature, dropout=drop_out, residual=True))
 
         # TODO: modify bottleneck to similar as paper
         self.bottleneck = DoubleConv(features[-1], features[-1] * 2, dropout=0.5)
@@ -93,7 +100,7 @@ class UNET(nn.Module):
 
 
 def test():
-    x = torch.randn((3, 3, 512, 512))
+    x = torch.randn((1, 3, 512, 512))
     # torch.reshape(x, [3, 512, 512])
     model = UNET(in_channels=3, out_channels=1)
     preds = model(x)
