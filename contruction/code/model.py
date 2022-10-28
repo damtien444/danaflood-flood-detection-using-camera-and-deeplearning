@@ -48,8 +48,8 @@ class UNET(nn.Module):
 
         # encoding parts
         for idx, feature in enumerate(features):
-            if idx in [3, 4]:
-                drop_out = 0.5
+            if idx in [ 4]:
+                drop_out = 0.2
             else:
                 drop_out = 0
             self.downs.append(DoubleConv(in_channels, feature, down=True, dropout=drop_out, residual=True))
@@ -57,8 +57,8 @@ class UNET(nn.Module):
 
         # decoding parts
         for idx, feature in enumerate(reversed(features)):
-            if idx in [0, 1]:
-                drop_out = 0.5
+            if idx in [0]:
+                drop_out = 0.2
             else:
                 drop_out = 0
 
@@ -68,7 +68,7 @@ class UNET(nn.Module):
             self.ups.append(DoubleConv(feature * 2, feature, dropout=drop_out, residual=True))
 
         # TODO: modify bottleneck to similar as paper
-        self.bottleneck = DoubleConv(features[-1], features[-1] * 2, dropout=0.5)
+        self.bottleneck = DoubleConv(features[-1], features[-1] * 2, dropout=0.3)
 
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
