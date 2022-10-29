@@ -95,6 +95,8 @@ def save_predictions_as_imgs(
         with torch.no_grad():
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
+        # if type != "train":
+        torchvision.utils.save_image(x, f"{folder}/groundtruth_{experiment_name}_{type}_{idx}.png")
         torchvision.utils.save_image(preds, f"{folder}/pred_{experiment_name}_{type}_{idx}.png")
         torchvision.utils.save_image(y.unsqueeze(1), f"{folder}/target_{experiment_name}_{type}_{idx}.png")
 
