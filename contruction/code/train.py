@@ -147,11 +147,13 @@ def main():
             save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')
             if is_colab:
                 os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
-
+                os.system(f"cp -a /content/danaflood-flood-detection-using-camera-and-deeplearning/contruction/artifacts/saved_images /content/drive/MyDrive/EXPERIMENT_EXAMPLES")
         # print example
-        save_predictions_as_imgs(val_loader, model, folder=TEST_PRED_FOLDER, device=DEVICE, type='train')
+        save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='train')
 
-    save_predictions_as_imgs(test_loader, model,  folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
+    save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
+
+
 
 if __name__ == "__main__":
     main()
