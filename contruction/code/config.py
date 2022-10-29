@@ -6,7 +6,7 @@ BATCH_SIZE = 4
 NUM_EPOCHS = 20
 NUM_WORKERS = 2
 
-EXPERIMENT_NAME = "UNET_WITH_RESIDUAL_Tversky_loss "
+EXPERIMENT_NAME = "UNET_WITH_RESIDUAL_Tversky_loss"
 
 # image size must be divisible by 32, because U-Net structure has 5 bi-down_sample
 IMAGE_HEIGHT = 512
