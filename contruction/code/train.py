@@ -9,12 +9,14 @@ import torch.optim as optim
 
 from loss import DiceBCELoss, DiceLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
-    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab, EXPERIMENT_NAME
+    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR
 from model import UNET
 from datetime import datetime
 import wandb
 
-from utils import load_checkpoint, save_checkpoint, get_loaders, check_accuracy, save_predictions_as_imgs
+from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
+    get_test_loader, check_train_accuracy, check_test_accuracy
+
 
 # Hyperparameter etc.
 
@@ -77,6 +79,18 @@ def main():
         ]
     )
 
+    test_transform = A.Compose(
+        [
+            A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
+            A.Normalize(
+                mean=[0., 0., 0.],
+                std=[1., 1., 1.],
+                max_pixel_value=255.0,
+            ),
+            ToTensorV2(),
+        ]
+    )
+
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     # loss_fn = nn.BCEWithLogitsLoss()
     loss_fn = DiceLoss()
@@ -90,6 +104,15 @@ def main():
         batch_size=BATCH_SIZE,
         train_transform=train_transform,
         val_transform=val_transform,
+        num_workers=NUM_WORKERS,
+        pin_memory=PIN_MEMORY,
+    )
+
+    test_loader = get_test_loader(
+        test_dir=TEST_IMAGE_DIR,
+        test_maskdir=TEST_MASK_DIR,
+        batch_size=BATCH_SIZE,
+        test_transform=test_transform,
         num_workers=NUM_WORKERS,
         pin_memory=PIN_MEMORY,
     )
@@ -115,7 +138,9 @@ def main():
 
 
         # check acc
-        acc = check_accuracy(val_loader, model, device=DEVICE)
+        acc = check_train_accuracy(val_loader, model, device=DEVICE)
+        test_acc = check_test_accuracy(test_loader, model, device=DEVICE)
+
         if best_perform < acc:
             best_perform = acc
             save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')

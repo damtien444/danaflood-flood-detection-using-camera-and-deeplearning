@@ -8,5 +8,8 @@
 
 # todo:
 #       gán label độ sâu cho data -> với độ mịn 5 level (deadline: 27/10)
-#       cài đặt model chuẩn trong paper của thụy sỹ
-#       tạo tập test từ dữ liệu camera (size 300)
+#       cài đặt model chuẩn trong paper của thụy sỹ -> đã xong
+#       tạo tập test từ dữ liệu camera (size 300) -> đã có
+#       viết function test
+#       thử nghiệm Tversky Loss
+#       viết report bằng latex?

@@ -20,7 +20,7 @@ import numpy as np
 #           ✅ Even if mask don`t have channels, you need it. Convert each mask from HW to 1HW format for binary
 #           segmentation (expand the first dimension).
 
-class CarvanaDataset(Dataset):
+class StrFloodDataset(Dataset):
     def __init__(self, image_dir, mask_dir, transform=None):
         self.image_dir = image_dir
         self.mask_dir = mask_dir
