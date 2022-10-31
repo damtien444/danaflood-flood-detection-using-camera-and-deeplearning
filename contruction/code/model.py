@@ -74,7 +74,7 @@ class UNET(nn.Module):
                                               torch.nn.Linear(512 * 8 * 8, 100),
                                               torch.nn.ReLU(),
                                               torch.nn.Linear(100, 4),
-                                              )
+                                              torch.nn.Softmax())
 
     def forward(self, x):
         skip_connections = []

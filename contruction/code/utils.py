@@ -77,10 +77,15 @@ def check_accuracy(loader, model, type, device="cuda"):
             x = x.to(device)
             y = y.to(device).unsqueeze(1)
             z = Variable(z.to(device))
+
             preds = model(x)
             preds_m = torch.sigmoid(preds[0])
-            preds_c = torch.softmax(preds[1], dim=1)
+            preds_c = preds[1]
+
+            _, preds_c = torch.max(preds_c.data, 1)
+
             preds_m = (preds_m > 0.5).float()
+
             acc_c = torch.sum(preds_c == z.data)
             num_correct += (preds_m == y).sum()
             num_pixels += torch.numel(preds_m)
@@ -88,8 +93,6 @@ def check_accuracy(loader, model, type, device="cuda"):
                     (preds_m + y).sum() + 1e-8
             )
             accs_c += acc_c / z.shape[0]
-
-
 
     print(f'{type}: Got {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
     print(f'{type}: Got {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
@@ -114,10 +117,11 @@ def save_predictions_as_imgs(
         loader, model, experiment_name, folder="saved_images/", device="cuda", type='train'
 ):
     model.eval()
-    for idx, (x, y) in enumerate(loader):
+    for idx, (x, y, z) in enumerate(loader):
         x = x.to(device=device)
         with torch.no_grad():
             preds = torch.sigmoid(model(x))
+            # todo: fix output
             preds = (preds > 0.5).float()
         # if type != "train":
         torchvision.utils.save_image(x, f"{folder}/groundtruth_{experiment_name}_{type}_{idx}.png")

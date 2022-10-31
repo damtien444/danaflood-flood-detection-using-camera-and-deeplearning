@@ -1,9 +1,9 @@
 import torch
 
-from utils import get_test_loader, load_checkpoint, save_predictions_as_imgs
+from utils import get_test_loader, load_checkpoint, save_predictions_as_imgs, check_train_accuracy
 from model import UNET
 from config import DEVICE, TEST_IMAGE_DIR, TEST_MASK_DIR, BATCH_SIZE, NUM_WORKERS, PIN_MEMORY, IMAGE_HEIGHT, \
-    IMAGE_WIDTH, EXPERIMENT_NAME, TEST_PRED_FOLDER
+    IMAGE_WIDTH, EXPERIMENT_NAME, TEST_PRED_FOLDER, CHECKPOINT_PATH
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
@@ -33,8 +33,10 @@ if __name__ == "__main__":
     )
 
     # check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
-    check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_Tversky_loss.pth.tar"
+    check_point_path = CHECKPOINT_PATH
 
     load_checkpoint(torch.load(check_point_path), model)
 
-    save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
+    acc = check_train_accuracy(test_loader, model, device=DEVICE)
+    print(acc)
+    # save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
