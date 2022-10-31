@@ -32,7 +32,8 @@ if __name__ == "__main__":
         pin_memory=PIN_MEMORY,
     )
 
-    check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
+    # check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
+    check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_Tversky_loss.pth.tar"
 
     load_checkpoint(torch.load(check_point_path), model)
 

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
 
-
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels, dropout=0, residual=False, down=False):
         super(DoubleConv, self).__init__()
@@ -10,16 +9,14 @@ class DoubleConv(nn.Module):
             nn.Conv2d(in_channels, out_channels, (3, 3), (1, 1), 1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-
             nn.Dropout(dropout),
-
             nn.Conv2d(out_channels, out_channels, (3, 3), (1, 1), 1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
         )
 
         self.conv_skip = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=(3,3), stride=(1,1), padding=1),
+            nn.Conv2d(in_channels, out_channels, kernel_size=(3, 3), stride=(1, 1), padding=1),
             nn.BatchNorm2d(out_channels),
         )
 
@@ -48,7 +45,7 @@ class UNET(nn.Module):
 
         # encoding parts
         for idx, feature in enumerate(features):
-            if idx in [ 4]:
+            if idx in [4]:
                 drop_out = 0.2
             else:
                 drop_out = 0
@@ -72,6 +69,13 @@ class UNET(nn.Module):
 
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
+        self.classifier = torch.nn.Sequential(self.pool,
+                                              torch.nn.Flatten(),
+                                              torch.nn.Linear(512 * 8 * 8, 100),
+                                              torch.nn.ReLU(),
+                                              torch.nn.Linear(100, 4),
+                                              torch.nn.Softmax())
+
     def forward(self, x):
         skip_connections = []
 
@@ -81,6 +85,8 @@ class UNET(nn.Module):
             x = self.pool(x)
 
         x = self.bottleneck(x)
+
+        y = self.classifier(x)
 
         skip_connections = skip_connections[::-1]
 
@@ -96,20 +102,26 @@ class UNET(nn.Module):
             # double conv
             x = self.ups[idx + 1](concat_skip)
 
-        return self.final_conv(x)
+        return self.final_conv(x), y
 
 
 def test():
-    x = torch.randn((1, 3, 512, 512))
+    x = torch.randn((4, 3, 512, 512))
     # torch.reshape(x, [3, 512, 512])
     model = UNET(in_channels=3, out_channels=1)
-    preds = model(x)
-    print(preds.shape)
+    preds_mask, preds_clasifi = model(x)
+    print(preds_mask.shape)
     print(x.shape)
+    print(preds_clasifi.shape)
+
+    # for param in model.modules():
+    #     # if param.requires_grad:
+    #     print(param)
     # assert preds.shape == x.shape
 
 
 if __name__ == "__main__":
-    # model = UNET(in_channels=1, out_channels=1)
+    # model = UNET(in_channels=3, out_channels=1)
     # print(model)
+    # summary(model, (3,512,512))
     test()

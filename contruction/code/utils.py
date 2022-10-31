@@ -1,8 +1,11 @@
 import torch
 import torchvision
+
+from config import CLASSIFICATION_LABEL
 from dataset import StrFloodDataset
 from torch.utils.data import DataLoader, random_split
 import wandb
+
 
 def save_checkpoint(state, filename='mycheckpoint.pth.tar'):
     print("=> Saving checkpoint")
@@ -27,12 +30,15 @@ def get_loaders(
         split_ratio=0.9
 ):
     if val_dir is None:
-        dataset = StrFloodDataset(train_dir, train_maskdir, transform=train_transform)
+        dataset = StrFloodDataset(image_dir=train_dir, mask_dir=train_maskdir, file_label=CLASSIFICATION_LABEL,
+                                  transform=train_transform)
         train_ds, val_ds = random_split(dataset, [int(len(dataset) * split_ratio),
                                                   int(len(dataset) * (1 - split_ratio) + 1)])
     else:
-        train_ds = StrFloodDataset(image_dir=train_dir, mask_dir=train_maskdir, transform=train_transform)
-        val_ds = StrFloodDataset(image_dir=val_dir, mask_dir=val_maskdir, transform=val_transform)
+        train_ds = StrFloodDataset(image_dir=train_dir, mask_dir=train_maskdir, file_label=CLASSIFICATION_LABEL,
+                                   transform=train_transform)
+        val_ds = StrFloodDataset(image_dir=val_dir, mask_dir=val_maskdir, file_label=CLASSIFICATION_LABEL,
+                                 transform=val_transform)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory,
                               shuffle=True)
@@ -42,6 +48,7 @@ def get_loaders(
 
     return train_loader, val_loader
 
+
 def get_test_loader(
         test_dir,
         test_maskdir,
@@ -50,9 +57,12 @@ def get_test_loader(
         num_workers=4,
         pin_memory=True,
 ):
-    test_ds = StrFloodDataset(image_dir=test_dir, mask_dir=test_maskdir, transform=test_transform)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory, shuffle=False)
+    test_ds = StrFloodDataset(image_dir=test_dir, mask_dir=test_maskdir, file_label=CLASSIFICATION_LABEL,
+                              transform=test_transform)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory,
+                             shuffle=False)
     return test_loader
+
 
 def check_accuracy(loader, model, type, device="cuda"):
     num_correct = 0
@@ -78,13 +88,16 @@ def check_accuracy(loader, model, type, device="cuda"):
     wandb.log({f'dice_score_{type}': dice_score / len(loader)})
     model.train()
 
-    return num_correct/num_pixels
+    return num_correct / num_pixels
+
 
 def check_train_accuracy(loader, model, device='cuda'):
     return check_accuracy(loader, model, "train", device)
 
+
 def check_test_accuracy(loader, model, device='cuda'):
     return check_accuracy(loader, model, 'test', device)
+
 
 def save_predictions_as_imgs(
         loader, model, experiment_name, folder="saved_images/", device="cuda", type='train'

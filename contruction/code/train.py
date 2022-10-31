@@ -9,8 +9,8 @@ import torch.optim as optim
 
 from loss import DiceBCELoss, DiceLoss, TverskyLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
-    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, is_colab, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR, \
-    TEST_PRED_FOLDER
+    NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, IS_COLAB, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR, \
+    TEST_PRED_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_PATH
 from model import UNET
 from datetime import datetime
 import wandb
@@ -28,18 +28,19 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
     # use tqdm for progress bar
     loop = tqdm(loader)
 
-    for batch_idx, (data, targets) in enumerate(loop):
+    for batch_idx, (data, targets_m, targets_c) in enumerate(loop):
         data = data.to(device=DEVICE)
-        targets = targets.float().unsqueeze(1).to(device=DEVICE)
+        targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE)
+        targets_c = targets_c.float().unsqueeze(1).to(device=DEVICE)
 
         # forward
         with torch.cuda.amp.autocast():
-            predictions = model(data)
+            predictions_m, predictions_c = model(data)
 
-            # preds = torch.sigmoid(predictions)
-            # preds = (preds > 0.5).float()
-
-            loss = loss_fn(predictions, targets)
+            if IS_TRAINING_CLASSIFIER:
+                loss = loss_fn(predictions_c, targets_c)
+            else:
+                loss = loss_fn(predictions_m, targets_m)
 
         # backward
         optimizer.zero_grad()
@@ -120,12 +121,18 @@ def main():
     )
 
     if LOAD_MODEL:
-        load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
+        load_checkpoint(torch.load(CHECKPOINT_PATH), model)
+
+        if IS_TRAINING_CLASSIFIER:
+            loss_fn = nn.CrossEntropyLoss()
+            for param in model.parameters():
+                param.requires_grad = False
+            for param in model.classifier.parameters():
+                param.requires_grad = True
 
     scaler = torch.cuda.amp.GradScaler()
     best_perform = 0
     for epoch in range(NUM_EPOCHS):
-
 
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
@@ -135,9 +142,7 @@ def main():
             "optimizer": optimizer.state_dict(),
         }
 
-        now = datetime.now()
         # save_checkpoint(checkpoint, filename=f'my_checkpoint_{now.strftime("%Y_%m_%d_%H_%M_%S")}')
-
 
         # check acc
         acc = check_train_accuracy(val_loader, model, device=DEVICE)
@@ -146,7 +151,7 @@ def main():
         if best_perform < test_acc:
             best_perform = test_acc
             save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')
-            if is_colab:
+            if IS_COLAB:
                 os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
                 os.system(f"cp -a /content/danaflood-flood-detection-using-camera-and-deeplearning/contruction/artifacts/saved_images /content/drive/MyDrive/EXPERIMENT_EXAMPLES")
         # print example

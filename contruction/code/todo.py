@@ -7,9 +7,10 @@
 #       cài đặt loss function https://www.kaggle.com/code/bigironsphere/loss-function-library-keras-pytorch/notebook
 
 # todo:
-#       gán label độ sâu cho data -> với độ mịn 5 level (deadline: 27/10)
+#       gán label độ sâu cho data -> với độ mịn 5 level (deadline: 27/10) -> done
 #       cài đặt model chuẩn trong paper của thụy sỹ -> đã xong
 #       tạo tập test từ dữ liệu camera (size 300) -> đã có
-#       viết function test
-#       thử nghiệm Tversky Loss
+#       viết function test -> done
+#       thử nghiệm Tversky Loss -> done -> not use
+#       training model với classify output
 #       viết report bằng latex?

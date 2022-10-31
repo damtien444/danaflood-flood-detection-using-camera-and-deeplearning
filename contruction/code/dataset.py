@@ -1,3 +1,4 @@
+import json
 import os
 from PIL import Image
 from torch.utils.data import Dataset
@@ -21,10 +22,14 @@ import numpy as np
 #           segmentation (expand the first dimension).
 
 class StrFloodDataset(Dataset):
-    def __init__(self, image_dir, mask_dir, transform=None):
+    def __init__(self, image_dir, mask_dir, file_label ,transform=None):
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.transform = transform
+
+        with open(file_label) as json_file:
+            self.label_dict = json.load(json_file)
+
         self.images = []
         for im in os.listdir(image_dir):
             if "mask" not in im:
@@ -40,6 +45,8 @@ class StrFloodDataset(Dataset):
         image = np.array(Image.open(img_path).convert("RGB"))
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 
+        classification = self.label_dict[self.images[index][:-4]]
+
         # label has to be convert from 0-255 to range 0-1
         mask[mask != 0] = 1
 
@@ -48,5 +55,5 @@ class StrFloodDataset(Dataset):
             image = augmentations["image"]
             mask = augmentations["mask"]
 
-        return image, mask
+        return image, mask, classification
 
