@@ -12,9 +12,9 @@ def save_checkpoint(state, filename='mycheckpoint.pth.tar'):
     torch.save(state, filename)
 
 
-def load_checkpoint(checkpoint, model):
+def load_checkpoint(checkpoint, model, strict=False):
     print("=> Loading checkpoint")
-    model.load_state_dict(checkpoint["state_dict"])
+    model.load_state_dict(checkpoint["state_dict"], strict=strict)
 
 
 def get_loaders(
@@ -71,7 +71,7 @@ def check_accuracy(loader, model, type, device="cuda"):
     model.eval()
 
     with torch.no_grad():
-        for x, y in loader:
+        for x, y, z in loader:
             x = x.to(device)
             y = y.to(device).unsqueeze(1)
             preds = torch.sigmoid(model(x))
@@ -81,6 +81,7 @@ def check_accuracy(loader, model, type, device="cuda"):
             dice_score += (2 * (preds * y).sum()) / (
                     (preds + y).sum() + 1e-8
             )
+
 
     print(f'{type}: Got {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')

@@ -121,7 +121,7 @@ def main():
     )
 
     if LOAD_MODEL:
-        load_checkpoint(torch.load(CHECKPOINT_PATH), model)
+        load_checkpoint(torch.load(CHECKPOINT_PATH), model, strict=False)
 
         if IS_TRAINING_CLASSIFIER:
             loss_fn = nn.CrossEntropyLoss()
