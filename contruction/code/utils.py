@@ -1,5 +1,6 @@
 import torch
 import torchvision
+from torch.autograd import Variable
 
 from config import CLASSIFICATION_LABEL
 from dataset import StrFloodDataset
@@ -68,23 +69,32 @@ def check_accuracy(loader, model, type, device="cuda"):
     num_correct = 0
     num_pixels = 0
     dice_score = 0
+    accs_c = 0
     model.eval()
 
     with torch.no_grad():
         for x, y, z in loader:
             x = x.to(device)
             y = y.to(device).unsqueeze(1)
-            preds = torch.sigmoid(model(x))
-            preds = (preds > 0.5).float()
-            num_correct += (preds == y).sum()
-            num_pixels += torch.numel(preds)
-            dice_score += (2 * (preds * y).sum()) / (
-                    (preds + y).sum() + 1e-8
+            z = Variable(z.to(device))
+            preds = model(x)
+            preds_m = torch.sigmoid(preds[0])
+            preds_c = torch.softmax(preds[1], dim=1)
+            preds_m = (preds_m > 0.5).float()
+            acc_c = torch.sum(preds_c == z.data)
+            num_correct += (preds_m == y).sum()
+            num_pixels += torch.numel(preds_m)
+            dice_score += (2 * (preds_m * y).sum()) / (
+                    (preds_m + y).sum() + 1e-8
             )
+            accs_c += acc_c / z.shape[0]
+
 
 
     print(f'{type}: Got {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
+    print(f'{type}: Got {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')
+
     wandb.log({f'acc_{type}': num_correct / num_pixels * 100})
     wandb.log({f'dice_score_{type}': dice_score / len(loader)})
     model.train()
