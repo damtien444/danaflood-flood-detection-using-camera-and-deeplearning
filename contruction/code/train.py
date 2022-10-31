@@ -27,11 +27,11 @@ from utils import load_checkpoint, save_checkpoint, get_loaders, save_prediction
 def train_fn(loader, model, optimizer, loss_fn, scaler):
     # use tqdm for progress bar
     loop = tqdm(loader)
-
+    model.train()
     for batch_idx, (data, targets_m, targets_c) in enumerate(loop):
         data = data.to(device=DEVICE)
         targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE)
-        targets_c = targets_c.float().unsqueeze(1).to(device=DEVICE)
+        targets_c = targets_c.type(torch.LongTensor).to(device=DEVICE)
 
         # forward
         with torch.cuda.amp.autocast():
