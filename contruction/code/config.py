@@ -13,7 +13,7 @@ IMAGE_HEIGHT = 512
 IMAGE_WIDTH = 512
 
 PIN_MEMORY = True
-LOAD_MODEL = False
+LOAD_MODEL = True
 TRAIN_IMG_DIR = r"data\train"
 TRAIN_MASK_DIR = r"data\train_masks"
 VAL_IMG_DIR = ""
