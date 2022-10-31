@@ -45,7 +45,7 @@ class StrFloodDataset(Dataset):
         image = np.array(Image.open(img_path).convert("RGB"))
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 
-        classification = self.label_dict[self.images[index][:-4]]
+        classification = self.label_dict[self.images[index][:-4]] - 1
 
         # label has to be convert from 0-255 to range 0-1
         mask[mask != 0] = 1
