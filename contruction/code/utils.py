@@ -94,8 +94,8 @@ def check_accuracy(loader, model, type, device="cuda"):
             )
             accs_c += acc_c / z.shape[0]
 
-    print(f'{type}: Got {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
-    print(f'{type}: Got {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
+    print(f'{type}: Got mask {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
+    print(f'{type}: Got class {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')
 
     wandb.log({f'mask_acc_{type}': num_correct / num_pixels * 100})
