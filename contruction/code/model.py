@@ -73,6 +73,8 @@ class UNET(nn.Module):
                                               torch.nn.Flatten(),
                                               torch.nn.Linear(512 * 8 * 8, 100),
                                               torch.nn.ReLU(),
+                                              torch.nn.Linear(1000, 100),
+                                              torch.nn.ReLU(),
                                               torch.nn.Linear(100, 4),
                                               torch.nn.Softmax())
 
