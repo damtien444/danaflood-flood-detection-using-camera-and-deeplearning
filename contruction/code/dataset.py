@@ -42,6 +42,8 @@ class StrFloodDataset(Dataset):
         img_path = os.path.join(self.image_dir, self.images[index])
 
         mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg", "_mask.jpg"))
+        mask_path = os.path.join(self.mask_dir, self.images[index].replace(".png", "_mask.jpg"))
+
         image = np.array(Image.open(img_path).convert("RGB"))
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 
