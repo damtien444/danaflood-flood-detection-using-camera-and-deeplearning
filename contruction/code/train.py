@@ -45,7 +45,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
             _, preds_c = torch.max(predictions_c.data, 1)
 
-            preds_m = (preds_m > 0.5).float()
+            preds_m = (predictions_m > 0.5).float()
 
             acc_c = torch.sum(preds_c == targets_c.data)
             num_correct += (preds_m == targets_m).sum()
