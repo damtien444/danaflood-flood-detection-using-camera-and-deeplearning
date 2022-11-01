@@ -2,7 +2,7 @@ import torch
 import torchvision
 from torch.autograd import Variable
 
-from config import CLASSIFICATION_LABEL
+from config import CLASSIFICATION_LABEL, IS_TRAINING_CLASSIFIER
 from dataset import StrFloodDataset
 from torch.utils.data import DataLoader, random_split
 import wandb
@@ -65,11 +65,12 @@ def get_test_loader(
     return test_loader
 
 
-def check_accuracy(loader, model, type, device="cuda"):
+def check_accuracy(loader, model, type, loss_fn, device="cuda"):
     num_correct = 0
     num_pixels = 0
     dice_score = 0
     accs_c = 0
+    losses = 0
     model.eval()
 
     with torch.no_grad():
@@ -82,6 +83,12 @@ def check_accuracy(loader, model, type, device="cuda"):
             preds_m = torch.sigmoid(preds[0])
             preds_c = preds[1]
 
+            if IS_TRAINING_CLASSIFIER:
+                loss = loss_fn(preds_c, z)
+
+            else:
+                loss = loss_fn(preds_m, y)
+
             _, preds_c = torch.max(preds_c.data, 1)
 
             preds_m = (preds_m > 0.5).float()
@@ -92,13 +99,17 @@ def check_accuracy(loader, model, type, device="cuda"):
             dice_score += (2 * (preds_m * y).sum()) / (
                     (preds_m + y).sum() + 1e-8
             )
+
+            losses += loss
             accs_c += acc_c / z.shape[0]
 
     print(f'{type}: Got mask {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
     print(f'{type}: Got class {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
+    print(f'{type}: Got {"class" if IS_TRAINING_CLASSIFIER else "mask"} loss {losses / len(loader):.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')
 
     wandb.log({f'mask_acc_{type}': num_correct / num_pixels * 100})
+    wandb.log({f'{"class" if IS_TRAINING_CLASSIFIER else "mask"}_loss_{type}': losses / len(loader)})
     wandb.log({f'class_acc_{type}': 100 * accs_c / len(loader)})
     wandb.log({f'dice_score_{type}': dice_score / len(loader)})
     model.train()
@@ -106,12 +117,12 @@ def check_accuracy(loader, model, type, device="cuda"):
     return num_correct / num_pixels
 
 
-def check_dev_accuracy(loader, model, device='cuda'):
-    return check_accuracy(loader, model, "dev", device)
+def check_dev_accuracy(loader, model, loss_fn, device='cuda'):
+    return check_accuracy(loader, model, "dev", loss_fn, device)
 
 
-def check_test_accuracy(loader, model, device='cuda'):
-    return check_accuracy(loader, model, 'test', device)
+def check_test_accuracy(loader, model, loss_fn, device='cuda'):
+    return check_accuracy(loader, model, 'test', loss_fn, device)
 
 
 def save_predictions_as_imgs(

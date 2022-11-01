@@ -68,7 +68,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
-        wandb.log({"train loss": loss})
+        wandb.log({"train_loss": loss})
         wandb.log({f'mask_acc_train': num_correct / num_pixels * 100})
         wandb.log({f'class_acc_train': 100 * accs_c / len(loader)})
         wandb.log({f'dice_score_train': dice_score / len(loader)})
@@ -156,21 +156,18 @@ def main():
     for epoch in range(NUM_EPOCHS):
 
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
-
-        # save model
-        checkpoint = {
-            "state_dict": model.state_dict(),
-            "optimizer": optimizer.state_dict(),
-        }
-
-        # save_checkpoint(checkpoint, filename=f'my_checkpoint_{now.strftime("%Y_%m_%d_%H_%M_%S")}')
-
-        # check acc
-        acc = check_dev_accuracy(val_loader, model, device=DEVICE)
-        test_acc = check_test_accuracy(test_loader, model, device=DEVICE)
+        acc = check_dev_accuracy(val_loader, model, loss_fn=loss_fn, device=DEVICE)
+        test_acc = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
 
         if best_perform < test_acc:
             best_perform = test_acc
+
+            # save model
+            checkpoint = {
+                "state_dict": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+            }
+
             save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')
             if IS_COLAB:
                 os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
