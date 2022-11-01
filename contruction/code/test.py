@@ -3,7 +3,7 @@ import torch
 from utils import get_test_loader, load_checkpoint, save_predictions_as_imgs, check_dev_accuracy
 from model import UNET
 from config import DEVICE, TEST_IMAGE_DIR, TEST_MASK_DIR, BATCH_SIZE, NUM_WORKERS, PIN_MEMORY, IMAGE_HEIGHT, \
-    IMAGE_WIDTH, EXPERIMENT_NAME, OUTPUT_FOLDER, CHECKPOINT_PATH
+    IMAGE_WIDTH, EXPERIMENT_NAME, OUTPUT_FOLDER, CHECKPOINT_INPUT_PATH
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     )
 
     # check_point_path = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
-    check_point_path = CHECKPOINT_PATH
+    check_point_path = CHECKPOINT_INPUT_PATH
 
     load_checkpoint(torch.load(check_point_path), model)
 

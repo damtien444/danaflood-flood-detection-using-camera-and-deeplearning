@@ -10,18 +10,14 @@ import torch.optim as optim
 from loss import DiceBCELoss, DiceLoss, TverskyLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
     NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, IS_COLAB, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR, \
-    OUTPUT_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_PATH
+    OUTPUT_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_INPUT_PATH, CHECKPOINT_OUTPUT_PATH, DRIVE_OUTPUT_FOLDER, \
+    DRIVE_CHECKPOINTS_OUTPUT
 from model import UNET
 from datetime import datetime
 import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
     get_test_loader, check_dev_accuracy, check_test_accuracy
-
-
-# Hyperparameter etc.
-
-
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -142,7 +138,7 @@ def main():
     )
 
     if LOAD_MODEL:
-        load_checkpoint(torch.load(CHECKPOINT_PATH), model, strict=False)
+        load_checkpoint(torch.load(CHECKPOINT_INPUT_PATH), model, strict=False)
 
         if IS_TRAINING_CLASSIFIER:
             loss_fn = nn.CrossEntropyLoss()
@@ -158,6 +154,8 @@ def main():
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
         acc = check_dev_accuracy(val_loader, model, loss_fn=loss_fn, device=DEVICE)
         test_acc = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
+        save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
+
 
         if best_perform < test_acc:
             best_perform = test_acc
@@ -168,16 +166,13 @@ def main():
                 "optimizer": optimizer.state_dict(),
             }
 
-            save_checkpoint(checkpoint, filename=f'{EXPERIMENT_NAME}.pth.tar')
+            save_checkpoint(checkpoint, filename=CHECKPOINT_OUTPUT_PATH)
             if IS_COLAB:
-                os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
-                os.system(f"cp -a /content/danaflood-flood-detection-using-camera-and-deeplearning/contruction/artifacts/saved_images /content/drive/MyDrive/EXPERIMENT_EXAMPLES")
+                os.system(f"cp {CHECKPOINT_OUTPUT_PATH} {DRIVE_CHECKPOINTS_OUTPUT}")
+                os.system(f"cp -a {OUTPUT_FOLDER} {DRIVE_OUTPUT_FOLDER}")
         # print example
-        save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
 
     # save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
-
-
 
 if __name__ == "__main__":
     main()
