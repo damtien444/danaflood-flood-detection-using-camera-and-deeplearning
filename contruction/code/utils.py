@@ -98,15 +98,16 @@ def check_accuracy(loader, model, type, device="cuda"):
     print(f'{type}: Got {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')
 
-    wandb.log({f'acc_{type}': num_correct / num_pixels * 100})
+    wandb.log({f'mask_acc_{type}': num_correct / num_pixels * 100})
+    wandb.log({f'class_acc_{type}': 100 * accs_c / len(loader)})
     wandb.log({f'dice_score_{type}': dice_score / len(loader)})
     model.train()
 
     return num_correct / num_pixels
 
 
-def check_train_accuracy(loader, model, device='cuda'):
-    return check_accuracy(loader, model, "train", device)
+def check_dev_accuracy(loader, model, device='cuda'):
+    return check_accuracy(loader, model, "dev", device)
 
 
 def check_test_accuracy(loader, model, device='cuda'):
@@ -120,12 +121,13 @@ def save_predictions_as_imgs(
     for idx, (x, y, z) in enumerate(loader):
         x = x.to(device=device)
         with torch.no_grad():
-            preds = torch.sigmoid(model(x))
+            preds_m, preds_c = model(x)
+            preds_m = torch.sigmoid(preds_m)
             # todo: fix output
-            preds = (preds > 0.5).float()
+            preds_m = (preds_m > 0.5).float()
         # if type != "train":
         torchvision.utils.save_image(x, f"{folder}/groundtruth_{experiment_name}_{type}_{idx}.png")
-        torchvision.utils.save_image(preds, f"{folder}/pred_{experiment_name}_{type}_{idx}.png")
+        torchvision.utils.save_image(preds_m, f"{folder}/pred_{experiment_name}_{type}_{idx}.png")
         torchvision.utils.save_image(y.unsqueeze(1), f"{folder}/target_{experiment_name}_{type}_{idx}.png")
 
     model.train()

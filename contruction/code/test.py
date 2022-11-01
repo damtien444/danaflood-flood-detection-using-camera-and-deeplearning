@@ -1,6 +1,6 @@
 import torch
 
-from utils import get_test_loader, load_checkpoint, save_predictions_as_imgs, check_train_accuracy
+from utils import get_test_loader, load_checkpoint, save_predictions_as_imgs, check_dev_accuracy
 from model import UNET
 from config import DEVICE, TEST_IMAGE_DIR, TEST_MASK_DIR, BATCH_SIZE, NUM_WORKERS, PIN_MEMORY, IMAGE_HEIGHT, \
     IMAGE_WIDTH, EXPERIMENT_NAME, TEST_PRED_FOLDER, CHECKPOINT_PATH
@@ -37,6 +37,6 @@ if __name__ == "__main__":
 
     load_checkpoint(torch.load(check_point_path), model)
 
-    acc = check_train_accuracy(test_loader, model, device=DEVICE)
+    acc = check_dev_accuracy(test_loader, model, device=DEVICE)
     print(acc)
     # save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')

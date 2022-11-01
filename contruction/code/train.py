@@ -16,7 +16,7 @@ from datetime import datetime
 import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
-    get_test_loader, check_train_accuracy, check_test_accuracy
+    get_test_loader, check_dev_accuracy, check_test_accuracy
 
 
 # Hyperparameter etc.
@@ -33,9 +33,27 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
         targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE)
         targets_c = targets_c.type(torch.LongTensor).to(device=DEVICE)
 
+        num_correct = 0
+        num_pixels = 0
+        dice_score = 0
+        accs_c = 0
+
         # forward
         with torch.cuda.amp.autocast():
+
             predictions_m, predictions_c = model(data)
+
+            _, preds_c = torch.max(predictions_c.data, 1)
+
+            preds_m = (preds_m > 0.5).float()
+
+            acc_c = torch.sum(preds_c == targets_c.data)
+            num_correct += (preds_m == targets_m).sum()
+            num_pixels += torch.numel(preds_m)
+            dice_score += (2 * (preds_m * targets_m).sum()) / (
+                    (preds_m + targets_m).sum() + 1e-8
+            )
+            accs_c += acc_c / targets_c.shape[0]
 
             if IS_TRAINING_CLASSIFIER:
                 loss = loss_fn(predictions_c, targets_c)
@@ -50,7 +68,10 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
-        wandb.log({"loss": loss})
+        wandb.log({"train loss": loss})
+        wandb.log({f'mask_acc_train': num_correct / num_pixels * 100})
+        wandb.log({f'class_acc_train': 100 * accs_c / len(loader)})
+        wandb.log({f'dice_score_train': dice_score / len(loader)})
 
 
 def main():
@@ -145,7 +166,7 @@ def main():
         # save_checkpoint(checkpoint, filename=f'my_checkpoint_{now.strftime("%Y_%m_%d_%H_%M_%S")}')
 
         # check acc
-        acc = check_train_accuracy(val_loader, model, device=DEVICE)
+        acc = check_dev_accuracy(val_loader, model, device=DEVICE)
         test_acc = check_test_accuracy(test_loader, model, device=DEVICE)
 
         if best_perform < test_acc:
