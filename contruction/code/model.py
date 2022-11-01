@@ -71,7 +71,7 @@ class UNET(nn.Module):
 
         self.classifier = torch.nn.Sequential(self.pool,
                                               torch.nn.Flatten(),
-                                              torch.nn.Linear(512 * 8 * 8, 100),
+                                              torch.nn.Linear(512 * 8 * 8, 1000),
                                               torch.nn.ReLU(),
                                               torch.nn.Linear(1000, 100),
                                               torch.nn.ReLU(),
