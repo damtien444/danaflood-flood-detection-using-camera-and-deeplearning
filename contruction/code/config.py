@@ -6,7 +6,19 @@ BATCH_SIZE = 4
 NUM_EPOCHS = 20
 NUM_WORKERS = 2
 
-EXPERIMENT_NAME = "UNET_WITH_RESIDUAL_classification"
+ROOT_FOLDER = r"E:\DATN_local"
+
+IS_COLAB = True
+if IS_COLAB:
+    ROOT_FOLDER = "/content/"
+    BATCH_SIZE = 16
+
+DATASET = ROOT_FOLDER + r"\1_IN_USED_DATASET"
+
+
+EXPERIMENT_NAME = "UNET_WITH_RESIDUAL_CLASSIFICATION"
+
+CHECK_POINT_MASK_NAME = "UNET_WITH_RESIDUAL_DICE_LOSS.pth.tar"
 
 # image size must be divisible by 32, because U-Net structure has 5 bi-down_sample
 IMAGE_HEIGHT = 512
@@ -14,26 +26,29 @@ IMAGE_WIDTH = 512
 
 PIN_MEMORY = True
 LOAD_MODEL = True
-TRAIN_IMG_DIR = r"data\train"
-TRAIN_MASK_DIR = r"data\train_masks"
+
+TRAIN_IMG_DIR = DATASET + r"\TRAIN_DEV"
+TRAIN_MASK_DIR = DATASET + r"\TRAIN_DEV_MASK"
+
+# USE random split so dont need to input this
 VAL_IMG_DIR = ""
 VAL_MASK_DIR = ""
-TEST_PRED_FOLDER = r"C:\Users\damti\OneDrive - The University of Technology\Desktop\Study\Do an tot nghiep\WorkingSpaceDATN\contruction\artifacts\saved_images"
-TEST_IMAGE_DIR = r"E:\DATN_local\0_DATASET\TEST"
-TEST_MASK_DIR = r"E:\DATN_local\0_DATASET\TEST"
-CLASSIFICATION_LABEL = r"E:\DATN_local\0_DATASET\level_label.json"
 
-CHECKPOINT_PATH = r"E:\DATN_local\MODEL_CHECKPOINTS\UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
+TEST_IMAGE_DIR = DATASET + r"\TEST"
+TEST_MASK_DIR = DATASET + r"\TEST_MASK"
+
+OUTPUT_FOLDER = ROOT_FOLDER + "/1_EXPERIMENT_OUTPUT/" + EXPERIMENT_NAME
+
+import os
+if not os.path.exists(OUTPUT_FOLDER):
+    os.makedirs(OUTPUT_FOLDER)
+
+
+CLASSIFICATION_LABEL = DATASET + r"/level_label.json"
+
+CHECKPOINT_PATH =  ROOT_FOLDER + r"/MODEL_CHECKPOINTS/" + CHECK_POINT_MASK_NAME
+CHECKPOINT_FULL_PATH = ROOT_FOLDER + r"/MODEL_CHECKPOINTS/" + "FOR_FUTURE_USE"
 
 IS_TRAINING_CLASSIFIER = True
 
-IS_COLAB = True
-if IS_COLAB:
-    TRAIN_IMG_DIR = r"/content/danaflood-flood-detection-using-camera-and-deeplearning/TRAIN_DEV"
-    TRAIN_MASK_DIR = r"/content/danaflood-flood-detection-using-camera-and-deeplearning/TRAIN_DEV"
-    TEST_PRED_FOLDER = r"/content/danaflood-flood-detection-using-camera-and-deeplearning/contruction/artifacts/saved_images"
-    TEST_IMAGE_DIR = r"/content/danaflood-flood-detection-using-camera-and-deeplearning/TEST"
-    TEST_MASK_DIR = "/content/danaflood-flood-detection-using-camera-and-deeplearning/TEST"
-    CHECKPOINT_PATH = r"/content/UNET_WITH_RESIDUAL_TEST_COLLECT.pth.tar"
-    CLASSIFICATION_LABEL = r"/content/level_label.json"
-    BATCH_SIZE = 16
+

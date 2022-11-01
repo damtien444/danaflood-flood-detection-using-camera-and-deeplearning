@@ -10,7 +10,7 @@ import torch.optim as optim
 from loss import DiceBCELoss, DiceLoss, TverskyLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
     NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, IS_COLAB, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR, \
-    TEST_PRED_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_PATH
+    OUTPUT_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_PATH
 from model import UNET
 from datetime import datetime
 import wandb
@@ -176,7 +176,7 @@ def main():
                 os.system(f"cp /content/danaflood-flood-detection-using-camera-and-deeplearning/{EXPERIMENT_NAME}.pth.tar /content/drive/MyDrive")
                 os.system(f"cp -a /content/danaflood-flood-detection-using-camera-and-deeplearning/contruction/artifacts/saved_images /content/drive/MyDrive/EXPERIMENT_EXAMPLES")
         # print example
-        save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='train')
+        save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
 
     # save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
 
