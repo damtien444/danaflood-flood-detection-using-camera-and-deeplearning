@@ -10,7 +10,7 @@ ROOT_FOLDER = r"E:\DATN_local"
 
 IS_COLAB = True
 if IS_COLAB:
-    ROOT_FOLDER = "/content/"
+    ROOT_FOLDER = "/content"
     BATCH_SIZE = 16
 
 DATASET = ROOT_FOLDER + r"\1_IN_USED_DATASET"
