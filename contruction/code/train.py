@@ -17,7 +17,7 @@ from datetime import datetime
 import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
-    get_test_loader, check_dev_accuracy, check_test_accuracy
+    get_test_loader, check_dev_accuracy, check_test_accuracy, draw_ROC_ConfusionMatrix_PE
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -68,6 +68,8 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
         wandb.log({f'mask_acc_train': num_correct / num_pixels * 100})
         wandb.log({f'class_acc_train': 100 * accs_c / len(data)})
         wandb.log({f'dice_score_train': dice_score / len(data)})
+
+
 
 
 def main():
