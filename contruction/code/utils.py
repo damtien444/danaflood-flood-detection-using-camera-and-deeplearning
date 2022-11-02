@@ -100,7 +100,7 @@ def check_accuracy(loader, model, type, loss_fn, device="cuda"):
                     (preds_m + target_m).sum() + 1e-8
             )
 
-            losses += loss/float(len(data))
+            losses += loss
 
     print(f'{type}: Got mask acc {num_correct / num_pixels * 100:.2f}')
     print(f'{type}: Got class acc {100 * accs_c / len(loader):.2f}')
