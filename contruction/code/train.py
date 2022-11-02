@@ -39,17 +39,17 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
             predictions_m, predictions_c = model(data)
 
-            _, preds_c = torch.max(predictions_c.data, 1)
+            # _, preds_c = torch.max(predictions_c.data, 1)
+            arg_maxs = torch.argmax(predictions_c)
+            num_correct_c = torch.sum(arg_maxs==targets_c)
+            accs_c = num_correct_c / float(len(data))
 
             preds_m = (predictions_m > 0.5).float()
-
-            acc_c = torch.sum(preds_c == targets_c.data)
             num_correct += (preds_m == targets_m).sum()
             num_pixels += torch.numel(preds_m)
             dice_score += (2 * (preds_m * targets_m).sum()) / (
                     (preds_m + targets_m).sum() + 1e-8
             )
-            accs_c += acc_c / targets_c.shape[0]
 
             if IS_TRAINING_CLASSIFIER:
                 loss = loss_fn(predictions_c, targets_c)
@@ -64,10 +64,10 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
-        wandb.log({"train_loss": loss})
+        wandb.log({f"{'class' if IS_TRAINING_CLASSIFIER else 'mask'}_loss_train": loss})
         wandb.log({f'mask_acc_train': num_correct / num_pixels * 100})
-        wandb.log({f'class_acc_train': 100 * accs_c / len(loader)})
-        wandb.log({f'dice_score_train': dice_score / len(loader)})
+        wandb.log({f'class_acc_train': 100 * accs_c / len(data)})
+        wandb.log({f'dice_score_train': dice_score / len(data)})
 
 
 def main():

@@ -74,37 +74,36 @@ def check_accuracy(loader, model, type, loss_fn, device="cuda"):
     model.eval()
 
     with torch.no_grad():
-        for x, y, z in loader:
-            x = x.to(device)
-            y = y.to(device).unsqueeze(1)
-            z = Variable(z.to(device))
+        for data, target_m, target_c in loader:
+            data = data.to(device)
+            target_m = target_m.to(device).unsqueeze(1)
+            target_c = Variable(target_c.to(device))
 
-            preds = model(x)
+            preds = model(data)
             preds_m = torch.sigmoid(preds[0])
             preds_c = preds[1]
 
             if IS_TRAINING_CLASSIFIER:
-                loss = loss_fn(preds_c, z)
-
+                loss = loss_fn(preds_c, target_c)
             else:
-                loss = loss_fn(preds_m, y)
+                loss = loss_fn(preds_m, target_m)
 
-            _, preds_c = torch.max(preds_c.data, 1)
+            arg_maxs = torch.argmax(preds_c)
+            num_correct_c = torch.sum(arg_maxs == target_c)
+            accs_c = num_correct_c / float(len(data))
 
             preds_m = (preds_m > 0.5).float()
 
-            acc_c = torch.sum(preds_c == z.data)
-            num_correct += (preds_m == y).sum()
+            num_correct += (preds_m == target_m).sum()
             num_pixels += torch.numel(preds_m)
-            dice_score += (2 * (preds_m * y).sum()) / (
-                    (preds_m + y).sum() + 1e-8
+            dice_score += (2 * (preds_m * target_m).sum()) / (
+                    (preds_m + target_m).sum() + 1e-8
             )
 
-            losses += loss
-            accs_c += acc_c / z.shape[0]
+            losses += loss/float(len(data))
 
-    print(f'{type}: Got mask {num_correct}/{num_pixels} with acc {num_correct / num_pixels * 100:.2f}')
-    print(f'{type}: Got class {accs_c}/{len(loader)} with acc {100 * accs_c / len(loader):.2f}')
+    print(f'{type}: Got mask acc {num_correct / num_pixels * 100:.2f}')
+    print(f'{type}: Got class acc {100 * accs_c / len(loader):.2f}')
     print(f'{type}: Got {"class" if IS_TRAINING_CLASSIFIER else "mask"} loss {losses / len(loader):.2f}')
     print(f'{type}: Dice score: {dice_score / len(loader)}')
 
