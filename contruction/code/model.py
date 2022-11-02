@@ -77,7 +77,7 @@ class UNET(nn.Module):
                                               DoubleConv(128, 64, residual=True),
                                               nn.Flatten(),
                                               nn.Linear(64*2*2, 32),
-                                              nn.ReLU(),
+                                              nn.Tanh(),
                                               nn.Linear(32, 4)
                                               )
 
