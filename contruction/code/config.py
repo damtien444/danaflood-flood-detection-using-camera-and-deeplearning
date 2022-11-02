@@ -21,10 +21,11 @@ if IS_COLAB:
     if not os.path.exists(DRIVE_OUTPUT_FOLDER):
         os.makedirs(DRIVE_OUTPUT_FOLDER)
     BATCH_SIZE = 16
+else:
+    DRIVE_OUTPUT_FOLDER = None
+    DRIVE_CHECKPOINTS_OUTPUT = None
 
 DATASET = ROOT_FOLDER + r"/1_IN_USED_DATASET"
-
-
 
 
 # image size must be divisible by 32, because U-Net structure has 5 bi-down_sample

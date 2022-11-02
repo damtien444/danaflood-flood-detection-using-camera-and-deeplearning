@@ -75,12 +75,10 @@ class UNET(nn.Module):
                                               DoubleConv(256, 128, residual=True),
                                               self.pool,
                                               DoubleConv(128, 64, residual=True),
-                                              nn.AvgPool2d(kernel_size=2),
                                               nn.Flatten(),
-                                              nn.Linear(64*1*1, 32),
+                                              nn.Linear(64*2*2, 32),
                                               nn.ReLU(),
-                                              nn.Linear(32, 4),
-                                              nn.Softmax()
+                                              nn.Linear(32, 4)
                                               )
 
                                               # torch.nn.Flatten(),

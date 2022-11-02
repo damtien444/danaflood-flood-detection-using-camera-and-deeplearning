@@ -114,7 +114,7 @@ def check_accuracy(loader, model, type, loss_fn, device="cuda"):
     wandb.log({f'dice_score_{type}': dice_score / len(loader)})
     model.train()
 
-    return num_correct / num_pixels
+    return num_correct / num_pixels if not IS_TRAINING_CLASSIFIER else accs_c / len(loader)
 
 
 def check_dev_accuracy(loader, model, loss_fn, device='cuda'):
