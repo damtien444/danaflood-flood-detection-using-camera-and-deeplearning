@@ -156,6 +156,7 @@ def main():
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
         acc = check_dev_accuracy(val_loader, model, loss_fn=loss_fn, device=DEVICE)
         test_acc = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
+        draw_ROC_ConfusionMatrix_PE(model, test_loader, [0,1,2,3])
         save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
 
 
