@@ -11,7 +11,7 @@ from loss import DiceBCELoss, DiceLoss, TverskyLoss
 from config import DEVICE, IMAGE_HEIGHT, IMAGE_WIDTH, LEARNING_RATE, TRAIN_IMG_DIR, TRAIN_MASK_DIR, BATCH_SIZE, \
     NUM_WORKERS, PIN_MEMORY, LOAD_MODEL, NUM_EPOCHS, IS_COLAB, EXPERIMENT_NAME, TEST_IMAGE_DIR, TEST_MASK_DIR, \
     OUTPUT_FOLDER, IS_TRAINING_CLASSIFIER, CHECKPOINT_INPUT_PATH, CHECKPOINT_OUTPUT_PATH, DRIVE_OUTPUT_FOLDER, \
-    DRIVE_CHECKPOINTS_OUTPUT
+    DRIVE_CHECKPOINTS_OUTPUT, LOAD_OPTIMIZER
 from model import UNET
 from datetime import datetime
 import wandb
@@ -139,6 +139,8 @@ def main():
 
     if LOAD_MODEL:
         load_checkpoint(torch.load(CHECKPOINT_INPUT_PATH), model, strict=False)
+        if LOAD_OPTIMIZER:
+            optimizer.load_state_dict(torch.load(CHECKPOINT_INPUT_PATH)["optimizer"])
 
         if IS_TRAINING_CLASSIFIER:
             loss_fn = nn.CrossEntropyLoss()
