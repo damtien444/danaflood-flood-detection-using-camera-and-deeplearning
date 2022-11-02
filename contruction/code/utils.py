@@ -152,7 +152,7 @@ def draw_ROC_ConfusionMatrix_PE(model, test_data_loader, labels_class):
 
             images = Variable(images.to(DEVICE))
             labels = Variable(labels.to(DEVICE))
-            embed_feat = model(images)
+            _mask, embed_feat = model(images)
             if batch_idx == 0:
                 list_embed_vector = embed_feat
                 list_labels = labels
