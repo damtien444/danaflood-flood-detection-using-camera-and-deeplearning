@@ -152,18 +152,18 @@ def main():
                 param.requires_grad = True
 
     scaler = torch.cuda.amp.GradScaler()
-    best_perform = 0
+    best_perform = 10000
     for epoch in range(NUM_EPOCHS):
 
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
         acc = check_dev_accuracy(val_loader, model, loss_fn=loss_fn, device=DEVICE)
-        test_acc = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
+        test_loss = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
         draw_ROC_ConfusionMatrix_PE(model, test_loader, [0,1,2,3])
         save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
 
 
-        if best_perform < test_acc:
-            best_perform = test_acc
+        if best_perform > test_loss:
+            best_perform = test_loss
 
             # save model
             checkpoint = {

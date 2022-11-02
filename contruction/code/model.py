@@ -73,10 +73,10 @@ class UNET(nn.Module):
                                               DoubleConv(512, 256, residual=True),
                                               self.pool,
                                               DoubleConv(256, 128, residual=True),
-                                              self.pool,
-                                              DoubleConv(128, 64, residual=True),
                                               nn.Flatten(),
-                                              nn.Linear(64*2*2, 32),
+                                              nn.Linear(128*4*4, 100),
+                                              nn.Tanh(),
+                                              nn.Linear(100,32),
                                               nn.Tanh(),
                                               nn.Linear(32, 4)
                                               )
@@ -126,6 +126,7 @@ def test():
     print(preds_mask.shape)
     print(x.shape)
     print(preds_clasifi.shape)
+
 
     # for param in model.modules():
     #     # if param.requires_grad:
