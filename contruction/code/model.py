@@ -70,13 +70,26 @@ class UNET(nn.Module):
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
 
         self.classifier = torch.nn.Sequential(self.pool,
-                                              torch.nn.Flatten(),
-                                              torch.nn.Linear(512 * 8 * 8, 1000),
-                                              torch.nn.ReLU(),
-                                              torch.nn.Linear(1000, 100),
-                                              torch.nn.ReLU(),
-                                              torch.nn.Linear(100, 4),
-                                              torch.nn.Softmax())
+                                              DoubleConv(512, 256, residual=True),
+                                              self.pool,
+                                              DoubleConv(256, 128, residual=True),
+                                              self.pool,
+                                              DoubleConv(128, 64, residual=True),
+                                              nn.AvgPool2d(kernel_size=2),
+                                              nn.Flatten(),
+                                              nn.Linear(64*1*1, 32),
+                                              nn.ReLU(),
+                                              nn.Linear(32, 4),
+                                              nn.Softmax()
+                                              )
+
+                                              # torch.nn.Flatten(),
+                                              # torch.nn.Linear(512 * 8 * 8, 1000),
+                                              # torch.nn.ReLU(),
+                                              # torch.nn.Linear(1000, 100),
+                                              # torch.nn.ReLU(),
+                                              # torch.nn.Linear(100, 4),
+                                              # torch.nn.Softmax())
 
     def forward(self, x):
         skip_connections = []

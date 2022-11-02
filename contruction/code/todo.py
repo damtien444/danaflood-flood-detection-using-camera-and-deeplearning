@@ -12,11 +12,11 @@
 #       tạo tập test từ dữ liệu camera (size 300) -> đã có
 #       viết function test -> done
 #       thử nghiệm Tversky Loss -> done -> not use
+#       track loss value của train/dev/test để kiểm tra vấn đề -> done
 
 # todo:
 #       training model với classify output -> lỗi cần sửa chữa
 #       điều chỉnh output classifier -> thêm convolution layer, thêm connected layer
-#       track loss value của train/dev/test để kiểm tra vấn đề
 #       chuẩn hóa input cho model? (chỉ resize)
 #       fps tốc độ thực thi của mô hình?
 #       bắt đầu viết song song với
