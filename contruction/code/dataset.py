@@ -20,7 +20,7 @@ import numpy as np
 #           ✅ Masks have only 0 - background and 1 - target class values (for binary segmentation).
 #           ✅ Even if mask don`t have channels, you need it. Convert each mask from HW to 1HW format for binary
 #           segmentation (expand the first dimension).
-from utils import preprocess
+from utils import canny_preprocess
 
 
 class StrFloodDataset(Dataset):
@@ -49,7 +49,7 @@ class StrFloodDataset(Dataset):
             mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg", "_mask.jpg"))
 
         image = np.array(Image.open(img_path).convert("RGB"))
-        image = preprocess(image)
+        image = canny_preprocess(image)
 
         mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32)
 

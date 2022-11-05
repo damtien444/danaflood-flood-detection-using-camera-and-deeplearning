@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
 
-from utils import preprocess
+from utils import canny_preprocess
 
 
 class DoubleConv(nn.Module):

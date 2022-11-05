@@ -266,7 +266,7 @@ def auto_canny(image, o_threshold=0.2):
     return edged
 
 
-def preprocess(img, debug=True):
+def canny_preprocess(img, debug=True):
     _preprocessing = T.Compose([
         T.ToPILImage(),
         T.Grayscale(),
