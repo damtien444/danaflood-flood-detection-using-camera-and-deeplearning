@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
 
+from utils import preprocess
+
+
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels, dropout=0, residual=False, down=False):
         super(DoubleConv, self).__init__()
@@ -74,11 +77,11 @@ class UNET(nn.Module):
                                               self.pool,
                                               DoubleConv(256, 128, residual=True),
                                               nn.Flatten(),
-                                              nn.Linear(128*4*4, 100),
+                                              nn.Linear(128*4*4, 128),
+                                              # nn.Tanh(),
+                                              # nn.Linear(100,32),
                                               nn.Tanh(),
-                                              nn.Linear(100,32),
-                                              nn.Tanh(),
-                                              nn.Linear(32, 4)
+                                              nn.Linear(128, 4)
                                               )
 
                                               # torch.nn.Flatten(),
@@ -119,14 +122,13 @@ class UNET(nn.Module):
 
 
 def test():
-    x = torch.randn((4, 3, 512, 512))
+    x = torch.randn((4, 4, 512, 512))
     # torch.reshape(x, [3, 512, 512])
     model = UNET(in_channels=3, out_channels=1)
     preds_mask, preds_clasifi = model(x)
     print(preds_mask.shape)
     print(x.shape)
     print(preds_clasifi.shape)
-
 
     # for param in model.modules():
     #     # if param.requires_grad:

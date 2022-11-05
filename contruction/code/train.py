@@ -17,17 +17,19 @@ from datetime import datetime
 import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
-    get_test_loader, check_dev_accuracy, check_test_accuracy, draw_ROC_ConfusionMatrix_PE
+    get_test_loader, check_dev_accuracy, check_test_accuracy, draw_ROC_ConfusionMatrix_PE, \
+    calculate_classification_accuracy, MetricMonitor
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
     # use tqdm for progress bar
     loop = tqdm(loader)
     model.train()
+    metric_monitor = MetricMonitor()
     for batch_idx, (data, targets_m, targets_c) in enumerate(loop):
         data = data.to(device=DEVICE)
-        targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE)
-        targets_c = targets_c.type(torch.LongTensor).to(device=DEVICE)
+        targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE, non_blocking=True)
+        targets_c = targets_c.type(torch.LongTensor).to(device=DEVICE, non_blocking=True)
 
         num_correct = 0
         num_pixels = 0
@@ -39,22 +41,25 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
             predictions_m, predictions_c = model(data)
 
-            # _, preds_c = torch.max(predictions_c.data, 1)
-            arg_maxs = torch.argmax(predictions_c)
-            num_correct_c = torch.sum(arg_maxs==targets_c)
-            accs_c = num_correct_c / float(len(data))
-
             preds_m = (predictions_m > 0.5).float()
             num_correct += (preds_m == targets_m).sum()
             num_pixels += torch.numel(preds_m)
             dice_score += (2 * (preds_m * targets_m).sum()) / (
-                    (preds_m + targets_m).sum() + 1e-8
+                    (preds_m + targets_m).sum() + 1e-10
             )
 
             if IS_TRAINING_CLASSIFIER:
                 loss = loss_fn(predictions_c, targets_c)
+                if batch_idx == 0:
+                    list_embed_vector = predictions_c
+                    list_labels = targets_c
+                else:
+                    list_embed_vector = torch.cat((list_embed_vector, predictions_c), dim=0)
+                    list_labels = torch.cat((list_labels, targets_c), dim=0)
             else:
                 loss = loss_fn(predictions_m, targets_m)
+            metric_monitor.update("Loss", loss.item())
+
 
         # backward
         optimizer.zero_grad()
@@ -64,12 +69,15 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
-        wandb.log({f"{'class' if IS_TRAINING_CLASSIFIER else 'mask'}_loss_train": loss})
+        wandb.log({f"{'class' if IS_TRAINING_CLASSIFIER else 'mask'}_loss_train": metric_monitor.metrics['Loss']['avg']})
         wandb.log({f'mask_acc_train': num_correct / num_pixels * 100})
-        wandb.log({f'class_acc_train': 100 * accs_c / len(data)})
         wandb.log({f'dice_score_train': dice_score / len(data)})
 
-
+    # preds_batch_c = torch.argmax(list_embed_vector, dim=1)
+    if IS_TRAINING_CLASSIFIER:
+        class_accuracy = calculate_classification_accuracy(list_embed_vector, list_labels)
+        metric_monitor.update("Accuracy", class_accuracy)
+        wandb.log({f'class_acc_train': class_accuracy})
 
 
 def main():
@@ -80,8 +88,8 @@ def main():
         [
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
             A.Normalize(
-                mean=[0.,0.,0.],
-                std=[1.,1.,1.],
+                mean=[0.485, 0.456, 0.406],
+                std = [0.229, 0.224, 0.225],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),
@@ -92,8 +100,8 @@ def main():
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
-                mean=[0., 0., 0.],
-                std=[1., 1., 1.],
+                mean=[0.485, 0.456, 0.406],
+                std = [0.229, 0.224, 0.225],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),
@@ -104,8 +112,8 @@ def main():
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
-                mean=[0., 0., 0.],
-                std=[1., 1., 1.],
+                mean=[0.485, 0.456, 0.406],
+                std = [0.229, 0.224, 0.225],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),

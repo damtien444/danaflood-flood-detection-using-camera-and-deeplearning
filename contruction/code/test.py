@@ -15,8 +15,8 @@ if __name__ == "__main__":
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
-                mean=[0., 0., 0.],
-                std=[1., 1., 1.],
+                mean = [0.485, 0.456, 0.406],
+                std = [0.229, 0.224, 0.225],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),

@@ -13,10 +13,14 @@
 #       viết function test -> done
 #       thử nghiệm Tversky Loss -> done -> not use
 #       track loss value của train/dev/test để kiểm tra vấn đề -> done
+#       training model với classify output -> lỗi cần sửa chữa -> done
+#       điều chỉnh output classifier -> thêm convolution layer, thêm connected layer -> done
 
 # todo:
-#       training model với classify output -> lỗi cần sửa chữa
-#       điều chỉnh output classifier -> thêm convolution layer, thêm connected layer
-#       chuẩn hóa input cho model? (chỉ resize)
-#       fps tốc độ thực thi của mô hình?
+#       chuẩn hóa input cho model? (chỉ resize) -> thêm bước tiền xử lý đã propose
+#           https://learnopencv.com/otsu-thresholding-with-opencv/ -.> otsu threshold
+#       fps tốc độ thực thi của mô hình? -> done
+#       parse live video, record fps figure -> done
+#       thêm data đường bình thường -> tuning model
+#
 #       bắt đầu viết song song với
