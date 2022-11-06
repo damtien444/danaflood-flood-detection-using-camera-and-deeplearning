@@ -87,9 +87,10 @@ def main():
     train_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
+            A.HorizontalFlip(p=0.5),
             A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std = [0.229, 0.224, 0.225],
+                mean=[0, 0, 0],
+                std=[1, 1, 1],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),
@@ -100,8 +101,8 @@ def main():
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std = [0.229, 0.224, 0.225],
+                mean=[0, 0, 0],
+                std = [1, 1, 1],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),
@@ -112,8 +113,8 @@ def main():
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
             A.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std = [0.229, 0.224, 0.225],
+                mean=[0, 0, 0],
+                std=[1, 1, 1],
                 max_pixel_value=255.0,
             ),
             ToTensorV2(),
@@ -122,8 +123,7 @@ def main():
 
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     # loss_fn = nn.BCEWithLogitsLoss()
-    # loss_fn = DiceLoss()
-    loss_fn = TverskyLoss()
+    loss_fn = DiceLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     wandb.watch(model, optimizer, log="all")
@@ -182,7 +182,8 @@ def main():
             save_checkpoint(checkpoint, filename=CHECKPOINT_OUTPUT_PATH)
             if IS_COLAB:
                 os.system(f"cp {CHECKPOINT_OUTPUT_PATH} {DRIVE_CHECKPOINTS_OUTPUT}")
-                os.system(f"cp -a {OUTPUT_FOLDER} {DRIVE_OUTPUT_FOLDER}")
+                os.system(f"zip -r {EXPERIMENT_NAME}.zip {OUTPUT_FOLDER}")
+                os.system(f"cp -a {EXPERIMENT_NAME}.zip {DRIVE_OUTPUT_FOLDER}")
         # print example
 
     # save_predictions_as_imgs(test_loader, model,  EXPERIMENT_NAME, folder=TEST_PRED_FOLDER, device=DEVICE, type='test')
