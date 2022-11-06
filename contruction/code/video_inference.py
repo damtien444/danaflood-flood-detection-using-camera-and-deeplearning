@@ -6,6 +6,7 @@ import pafy
 import torch
 from PIL import Image
 
+from dataset import canny_preprocess
 from utils import load_checkpoint
 from model import UNET
 
@@ -15,7 +16,7 @@ from albumentations.pytorch import ToTensorV2
 
 model = UNET(in_channels=3, out_channels=1).to(DEVICE)
 
-check_point_path = CHECKPOINT_OUTPUT_PATH
+check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\UNET_WITH_RESIDUAL_CLASSIFICATION_PREPROCESSING.pth.tar"
 
 load_checkpoint(torch.load(check_point_path), model)
 
@@ -27,9 +28,6 @@ transform = A.Compose(
             std=[0.229, 0.224, 0.225],
             max_pixel_value=255.0,
         ),
-        A.ToGray(),
-        A.Sharpen(),
-        A.
         ToTensorV2(),
     ]
 )
@@ -46,6 +44,8 @@ online = False
 
 # capture = cv2.VideoCapture(0)
 capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
+capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
+
 if online:
     url = "https://www.youtube.com/watch?v=1M2IE21aUy4"
     video = pafy.new(url)
@@ -77,6 +77,7 @@ with torch.no_grad():
             # cv2.imshow('Frame', frame)
 
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image = canny_preprocess(image)
             image = transform(image=image)['image']
             image = image.to(device=DEVICE)
             image = image.unsqueeze(0)
