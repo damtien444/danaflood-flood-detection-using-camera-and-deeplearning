@@ -90,7 +90,7 @@ def main():
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
             A.HorizontalFlip(p=0.5),
             # A.RandomBrightnessContrast(p=0.3),
-            A.SafeRotate(limit=20),
+            A.SafeRotate(limit=5),
             A.Normalize(),
             ToTensorV2(),
         ]
