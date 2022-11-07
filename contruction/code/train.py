@@ -17,7 +17,7 @@ from datetime import datetime
 import wandb
 
 from utils import load_checkpoint, save_checkpoint, get_loaders, save_predictions_as_imgs, \
-    get_test_loader, check_dev_accuracy, check_test_accuracy, draw_ROC_ConfusionMatrix_PE, \
+    get_test_loader, check_dev_performance, check_test_performance, draw_ROC_ConfusionMatrix_PE, \
     calculate_classification_accuracy, MetricMonitor
 
 
@@ -89,7 +89,7 @@ def main():
             # A.RandomCrop(750, 750),
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
             A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.3),
+            # A.RandomBrightnessContrast(p=0.3),
             A.SafeRotate(limit=20),
             A.Normalize(),
             ToTensorV2(),
@@ -151,13 +151,14 @@ def main():
                 param.requires_grad = True
 
     scaler = torch.cuda.amp.GradScaler()
-    best_perform = 10000
+    best_perform = 100000
     for epoch in range(NUM_EPOCHS):
 
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
-        acc = check_dev_accuracy(val_loader, model, loss_fn=loss_fn, device=DEVICE)
-        test_loss = check_test_accuracy(test_loader, model, loss_fn=loss_fn, device=DEVICE)
-        draw_ROC_ConfusionMatrix_PE(model, test_loader, [0,1,2,3])
+        acc = check_dev_performance(val_loader, model, loss_fn=loss_fn, device=DEVICE)
+        test_loss = check_test_performance(test_loader, model, loss_fn=loss_fn, device=DEVICE)
+        if IS_TRAINING_CLASSIFIER:
+            draw_ROC_ConfusionMatrix_PE(model, test_loader, [0,1,2,3])
         save_predictions_as_imgs(val_loader, model, EXPERIMENT_NAME, folder=OUTPUT_FOLDER, device=DEVICE, type='train')
 
 

@@ -67,7 +67,7 @@ def get_test_loader(
     return test_loader
 
 
-def check_accuracy(loader, model, type, loss_fn, device="cuda"):
+def check_performance(loader, model, type, loss_fn, device="cuda"):
     num_correct = 0
     num_pixels = 0
     dice_score = 0
@@ -126,15 +126,15 @@ def check_accuracy(loader, model, type, loss_fn, device="cuda"):
 
     model.train()
 
-    return num_correct / num_pixels if not IS_TRAINING_CLASSIFIER else losses / len(loader)
+    return losses / len(loader)
 
 
-def check_dev_accuracy(loader, model, loss_fn, device='cuda'):
-    return check_accuracy(loader, model, "dev", loss_fn, device)
+def check_dev_performance(loader, model, loss_fn, device='cuda'):
+    return check_performance(loader, model, "dev", loss_fn, device)
 
 
-def check_test_accuracy(loader, model, loss_fn, device='cuda'):
-    return check_accuracy(loader, model, 'test', loss_fn, device)
+def check_test_performance(loader, model, loss_fn, device='cuda'):
+    return check_performance(loader, model, 'test', loss_fn, device)
 
 
 def save_predictions_as_imgs(
