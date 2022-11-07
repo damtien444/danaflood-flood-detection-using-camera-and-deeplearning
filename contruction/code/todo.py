@@ -23,4 +23,5 @@
 #       parse live video, record fps figure -> done
 #       thêm data đường bình thường -> tuning model -> rechosen data
 #       retrain lại thử nghiệm
+#       thử nghiệm với combine loss
 #       bắt đầu viết song song với

@@ -86,7 +86,7 @@ def main():
 
     train_transform = A.Compose(
         [
-            A.RandomCrop(750, 750),
+            # A.RandomCrop(750, 750),
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.3),
