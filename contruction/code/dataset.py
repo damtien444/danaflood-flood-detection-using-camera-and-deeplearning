@@ -107,6 +107,6 @@ def canny_preprocess(img, debug=True):
 #     ])
 
     canny_mask = _preprocessing(img)
-    # applied_mask = cv2.bitwise_and(img, canny_mask)
-#     result = _postprocessing(applied_mask)
-    return canny_mask
+    applied_mask = cv2.bitwise_and(img, canny_mask)
+    # result = _postprocessing(applied_mask)
+    return applied_mask

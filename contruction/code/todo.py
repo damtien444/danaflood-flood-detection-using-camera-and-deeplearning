@@ -21,6 +21,6 @@
 #           https://learnopencv.com/otsu-thresholding-with-opencv/ -.> otsu threshold
 #       fps tốc độ thực thi của mô hình? -> done
 #       parse live video, record fps figure -> done
-#       thêm data đường bình thường -> tuning model
-#
+#       thêm data đường bình thường -> tuning model -> rechosen data
+#       retrain lại thử nghiệm
 #       bắt đầu viết song song với

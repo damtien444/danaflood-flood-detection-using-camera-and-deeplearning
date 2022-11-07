@@ -86,13 +86,12 @@ def main():
 
     train_transform = A.Compose(
         [
+            A.RandomCrop(750, 750),
             A.Resize(height=IMAGE_HEIGHT, width = IMAGE_WIDTH),
             A.HorizontalFlip(p=0.5),
-            A.Normalize(
-                mean=[0, 0, 0],
-                std=[1, 1, 1],
-                max_pixel_value=255.0,
-            ),
+            A.RandomBrightnessContrast(p=0.3),
+            A.SafeRotate(limit=20),
+            A.Normalize(),
             ToTensorV2(),
         ]
     )
@@ -100,11 +99,7 @@ def main():
     val_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Normalize(
-                mean=[0, 0, 0],
-                std = [1, 1, 1],
-                max_pixel_value=255.0,
-            ),
+            A.Normalize(),
             ToTensorV2(),
         ]
     )
@@ -112,11 +107,7 @@ def main():
     test_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Normalize(
-                mean=[0, 0, 0],
-                std=[1, 1, 1],
-                max_pixel_value=255.0,
-            ),
+            A.Normalize(),
             ToTensorV2(),
         ]
     )
