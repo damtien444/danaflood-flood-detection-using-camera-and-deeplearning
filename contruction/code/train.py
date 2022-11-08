@@ -91,7 +91,7 @@ def main():
             A.HorizontalFlip(p=0.5),
             # A.RandomBrightnessContrast(p=0.3),
             A.SafeRotate(limit=5),
-            A.Normalize(),
+            # A.Normalize(),
             ToTensorV2(),
         ]
     )
@@ -99,7 +99,7 @@ def main():
     val_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Normalize(),
+            # A.Normalize(),
             ToTensorV2(),
         ]
     )
@@ -107,7 +107,7 @@ def main():
     test_transform = A.Compose(
         [
             A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-            A.Normalize(),
+            # A.Normalize(),
             ToTensorV2(),
         ]
     )

@@ -19,7 +19,7 @@ from albumentations.pytorch import ToTensorV2
 model = UNET(in_channels=3, out_channels=1).to(DEVICE)
 
 # check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\UNET_WITH_RESIDUAL_CLASSIFICATION_PREPROCESSING.pth.tar"
-check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\UNET_WITH_RESIDUAL_CLASSIFICATION_PREP_NOT_COMBINE.pth (1).tar"
+check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\UNET_WITH_RESIDUAL_CLASSIFICATION_REFINE_DATA_1_CLASSIFICATION.pth.tar"
 
 load_checkpoint(torch.load(check_point_path), model)
 

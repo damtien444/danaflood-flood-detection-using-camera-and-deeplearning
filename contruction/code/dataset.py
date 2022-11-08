@@ -90,7 +90,7 @@ def canny_preprocess(img, debug=True):
         T.Grayscale(),
         lambda x: np.array(x).astype(np.uint8),
         lambda x: auto_canny(x, otsu_thresholding(x)),
-        lambda x: cv2.dilate(x, np.ones((3, 3), np.uint8), iterations=1),
+        # lambda x: cv2.dilate(x, np.ones((3, 3), np.uint8), iterations=1),
         #         lambda x: cv2.morphologyEx(x, cv2.MORPH_CLOSE, np.ones((3,3),np.uint8)),
         lambda x: cv2.bitwise_not(x),
         lambda x: cv2.cvtColor(x,cv2.COLOR_GRAY2RGB),

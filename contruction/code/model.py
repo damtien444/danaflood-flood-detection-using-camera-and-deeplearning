@@ -77,10 +77,10 @@ class UNET(nn.Module):
                                               DoubleConv(256, 128, residual=True),
                                               nn.Flatten(),
                                               nn.Linear(128*4*4, 128),
-                                              # nn.Tanh(),
-                                              # nn.Linear(100,32),
                                               nn.Tanh(),
-                                              nn.Linear(128, 4)
+                                              nn.Linear(128,32),
+                                              nn.Tanh(),
+                                              nn.Linear(32, 4)
                                               )
 
                                               # torch.nn.Flatten(),
