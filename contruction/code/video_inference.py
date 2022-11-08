@@ -43,7 +43,7 @@ label = {
     3: "Dangerous water in the way!"
 }
 
-online = False
+online = True
 
 # capture = cv2.VideoCapture(0)
 capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
