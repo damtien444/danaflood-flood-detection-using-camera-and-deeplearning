@@ -1,4 +1,5 @@
 import torch
+import wandb
 from torchmetrics.functional import stat_scores, accuracy, precision, recall, precision_recall_curve
 import segmentation_models_pytorch as smp
 from tqdm import tqdm
@@ -95,6 +96,32 @@ def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cud
         print(type+f"_dataset_cls_precision:", dataset_cls_precision)
         print(type+f"_dataset_cls_recall:", dataset_cls_recall)
         print(type+f"_dataset_confusion_matrix:", dataset_confusion_matrix)
+
+        wandb.log({type + '_dataset_mutual_losses': dataset_mutual_losses,
+                   type + '_mask_losses': mask_losses,
+                   type + "_cls_losses": cls_losses,
+                   })
+
+        wandb.log({
+            type + "_dataset_mask_iou": dataset_mask_iou
+        })
+
+        wandb.log({
+            type + "_dataset_mask_f1": dataset_mask_f1
+        })
+
+        wandb.log({
+            type + "_dataset_cls_acc": dataset_cls_acc
+        })
+
+        wandb.log({
+            type + "_dataset_cls_precision": dataset_cls_precision
+        })
+
+        wandb.log({
+            type + "_dataset_cls_recall": dataset_cls_recall
+        })
+
     model.train()
     return dataset_mutual_losses
 
@@ -159,3 +186,31 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
     print("dataset_cls_precision:", dataset_cls_precision)
     print("dataset_cls_recall:", dataset_cls_recall)
     print("dataset_confusion_matrix:", dataset_confusion_matrix)
+
+    type = 'train_'
+    wandb.log({type+'dataset_mutual_losses': dataset_mutual_losses,
+               type+'mask_losses': mask_losses,
+               type+"cls_losses": cls_losses,
+    })
+
+    wandb.log({
+        type+"dataset_mask_iou": dataset_mask_iou
+    })
+
+    wandb.log({
+        type+"dataset_mask_f1": dataset_mask_f1
+    })
+
+    wandb.log({
+        type+"dataset_cls_acc": dataset_cls_acc
+    })
+
+    wandb.log({
+        type+"dataset_cls_precision": dataset_cls_precision
+    })
+
+    wandb.log({
+        type+"dataset_cls_recall": dataset_cls_recall
+    })
+
+

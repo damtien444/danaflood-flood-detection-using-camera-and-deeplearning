@@ -24,4 +24,5 @@
 #       thêm data đường bình thường -> tuning model -> rechosen data -> done
 #       retrain lại thử nghiệm -> done
 #       thử nghiệm với combine loss
+#       thuwử nghiệm với backbone model
 #       bắt đầu viết song song với

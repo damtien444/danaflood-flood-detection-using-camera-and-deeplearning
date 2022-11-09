@@ -91,7 +91,6 @@ ret, mask_plot = cv2.threshold(plt2gray, 1, 255, cv2.THRESH_BINARY)
 ax = plt.gca()
 
 
-i = 0
 with torch.no_grad():
     while True:
         check, frame = capture.read()
@@ -136,7 +135,6 @@ with torch.no_grad():
             cv2.putText(dst, "Inference FPS: " + str(fps_inference), (7, 80), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             cv2.putText(dst, "Post-processing FPS: "+str(fps_postprocess), (7, 100), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
-            i+=1
 
             sofi = (count_flood_pixel/total_pixel).item()
             y1.pop(0)

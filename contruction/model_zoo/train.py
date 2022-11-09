@@ -1,10 +1,12 @@
 import os
 
 import torch
+import wandb
 from torch import optim, nn
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
+from utils import draw_ROC_ConfusionMatrix_PE
 from utils import save_checkpoint
 from dataloader import Dataset
 from augmentation import get_training_augmentation, get_validation_augmentation
@@ -17,7 +19,7 @@ CLASSES = ['flood']
 DEVICE = 'cuda'
 
 
-IS_COLAB = False
+IS_COLAB = True
 ROOT_FOLDER = r"E:/DATN_local"
 BATCH_SIZE = 2
 loss_fusion_coefficient = 0.7
@@ -60,6 +62,9 @@ DECODER_LEARNING_RATE = 1e-4
 
 
 if __name__ == "__main__":
+
+    wandb.init(project="UNET_FLOOD", entity="damtien440")
+
     train_dataset = Dataset(
         x_train_dir,
         y_train_dir,
@@ -111,13 +116,17 @@ if __name__ == "__main__":
         ],
         lr=LEARNING_RATE)
 
+    wandb.watch(model, optimizer, log="all")
+
     scaler = torch.cuda.amp.GradScaler()
 
     best_perform = 1000
     for epoch in range(NUM_EPOCHS):
+
         train_fn(train_loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=loss_fusion_coefficient)
         val_mutual_loss = check_performance(valid_loader, model, "val", mask_loss_fn, cls_loss_fn, device=DEVICE, alpha=loss_fusion_coefficient)
         test_mutual_loss = check_performance(test_loader, model, "test", mask_loss_fn, cls_loss_fn, device=DEVICE, alpha=loss_fusion_coefficient)
+        draw_ROC_ConfusionMatrix_PE(model, test_loader, [0, 1, 2, 3], DEVICE)
 
         if best_perform > test_mutual_loss:
             best_perform = test_mutual_loss
@@ -126,6 +135,8 @@ if __name__ == "__main__":
                     "optimizer": optimizer.state_dict(),
                 }
             save_checkpoint(checkpoint, filename=CHECKPOINT_OUTPUT_PATH)
+
+            wandb.run.summary["best_perform"] = best_perform
 
             if IS_COLAB:
                 os.system(f"cp {CHECKPOINT_OUTPUT_PATH} {DRIVE_CHECKPOINTS_OUTPUT}")
