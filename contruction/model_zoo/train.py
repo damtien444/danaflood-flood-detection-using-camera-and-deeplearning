@@ -14,10 +14,10 @@ from augmentation import get_training_augmentation, get_validation_augmentation
 from train_step import train_fn, check_performance
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('-e', "encoder", type=str, default='mobilenet_v2')
-parser.add_argument('-w', 'weights', type=str, default='imagenet')
-parser.add_argument("-v", 'version', type=str, default='1')
-parser.add_argument('-c', 'colab', type=bool, default=True)
+parser.add_argument('-e', "--encoder", type=str, default='mobilenet_v2')
+parser.add_argument('-w', '--weights', type=str, default='imagenet')
+parser.add_argument("-v", '--version', type=str, default='1')
+parser.add_argument('-c', '--colab', type=bool, default=True)
 
 args = parser.parse_args()
 
