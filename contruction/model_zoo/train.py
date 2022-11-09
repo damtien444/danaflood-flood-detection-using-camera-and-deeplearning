@@ -51,7 +51,7 @@ y_valid_dir = os.path.join(DATA_DIR, 'VAL_MASK')
 x_test_dir = os.path.join(DATA_DIR, 'TEST')
 y_test_dir = os.path.join(DATA_DIR, 'TEST_MASK')
 
-file_label = DATA_DIR + r"\level_label.json"
+file_label = DATA_DIR + r"/level_label.json"
 
 
 CHECKPOINT_OUTPUT_PATH = ROOT_FOLDER + r"/MODEL_CHECKPOINTS/" + EXPERIMENT_NAME + ".pth.tar"
