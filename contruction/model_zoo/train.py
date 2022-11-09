@@ -23,7 +23,7 @@ IS_COLAB = True
 ROOT_FOLDER = r"E:/DATN_local"
 BATCH_SIZE = 2
 loss_fusion_coefficient = 0.7
-NUM_EPOCHS = 3
+NUM_EPOCHS = 30
 
 version = 1
 EXPERIMENT_NAME = ENCODER+"_"+ENCODER_WEIGHTS+"_"+str(version)
@@ -34,7 +34,7 @@ if IS_COLAB:
     DRIVE_CHECKPOINTS_OUTPUT = "/content/drive/MyDrive/DAMQUANGTIEN_DATN_SPACE/CHECKPOINTS_OUTPUT"
     if not os.path.exists(DRIVE_OUTPUT_FOLDER):
         os.makedirs(DRIVE_OUTPUT_FOLDER)
-    BATCH_SIZE = 4
+    BATCH_SIZE = 8
 else:
     DRIVE_OUTPUT_FOLDER = None
     DRIVE_CHECKPOINTS_OUTPUT = None

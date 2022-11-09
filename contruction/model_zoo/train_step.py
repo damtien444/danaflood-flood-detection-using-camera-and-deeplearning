@@ -50,7 +50,7 @@ def epoch_end(dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc):
 
 def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cuda', alpha=0.7):
     loop = tqdm(loader)
-    print("EVAL:", type)
+
     dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc, dataset_mutual_losses, mask_losses, cls_losses = [], [], [], [], [], []
     model.eval()
     with torch.no_grad():
@@ -86,7 +86,7 @@ def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cud
         dataset_mutual_losses = torch.mean(torch.FloatTensor(dataset_mutual_losses)).item()
         mask_losses           = torch.mean(torch.FloatTensor(mask_losses)).item()
         cls_losses            = torch.mean(torch.FloatTensor(cls_losses)).item()
-
+        print("EVAL:", type)
         print(type+'_dataset_mutual_losses:', dataset_mutual_losses)
         print(type+'_mask_losses:', mask_losses)
         print(type+f"_cls_losses:", cls_losses)
