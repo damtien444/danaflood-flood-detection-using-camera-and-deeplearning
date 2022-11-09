@@ -1,6 +1,6 @@
 import torch
 import wandb
-from torchmetrics.functional import stat_scores, accuracy, precision, recall, precision_recall_curve
+from torchmetrics.functional import stat_scores, accuracy, precision, recall, precision_recall_curve, confusion_matrix
 import segmentation_models_pytorch as smp
 from tqdm import tqdm
 
@@ -10,20 +10,7 @@ def share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn, model, de
     mask_loss = mask_loss_fn(preds_m, targets_m)
     cls_loss = cls_loss_fn(pred_c, targets_c)
 
-    # class_stat_score: [tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``)
-    # shape: [batch_size, 5]
-    cls_stat_score = stat_scores(pred_c, targets_c, reduce='macro', num_classes=4)
-
-    # mask_stat_score: true_positive, false_positive, false_negative, true_negative tensors (N, C) shape each.
-    # shape: list of [[batch_size, 1], [batch_size, 1], [batch_size, 1], [batch_size, 1]]
-    mask_stat_score = smp.metrics.get_stats(preds_m.long(), targets_m.long(), mode='binary')
-
-    # cls_metrics -> accuracy, confusion matrix -> stat, precision, recall
-    output = torch.argmax(pred_c, dim=1)
-
-    # float
-    cls_acc = torch.true_divide((targets_c == output).sum(), output.size(0)).item()
-    return mask_loss, cls_loss, mask_stat_score, cls_stat_score, cls_acc
+    return mask_loss, cls_loss, preds_m, pred_c
 
 def epoch_end(dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc):
     mask_tp = dataset_mask_stat_score[0]
@@ -51,37 +38,43 @@ def epoch_end(dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc):
 def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cuda', alpha=0.7):
     loop = tqdm(loader)
 
-    dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc, dataset_mutual_losses, mask_losses, cls_losses = [], [], [], [], [], []
+    dataset_mutual_losses, mask_losses, cls_losses = [], [], []
     model.eval()
     with torch.no_grad():
         for batch_idx, (image, targets_m, targets_c) in enumerate(loop):
             targets_m = targets_m.float().unsqueeze(1).to(device=device, non_blocking=True)
             targets_c = targets_c.type(torch.LongTensor).to(device=device, non_blocking=True)
-            mask_loss, cls_loss, mask_stat_score, cls_stat_score, cls_acc = share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn, model)
-            loss = (mask_loss*alpha + (1-alpha)*cls_loss)
+            mask_loss, cls_loss, pred_m, pred_c = share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn,
+                                                             model)
+            loss = (mask_loss * alpha + (1 - alpha) * cls_loss)
 
             dataset_mutual_losses.append(loss)
             mask_losses.append(mask_loss)
             cls_losses.append(cls_loss)
 
-            dataset_cls_acc.append(cls_acc)
-            if len(dataset_mask_stat_score) <= 0:
-                dataset_mask_stat_score = list(mask_stat_score)
-                for i in range(5):
-                    dataset_cls_stat_score.append(cls_stat_score[:,i])
+            if batch_idx == 0:
+                list_pred_m = pred_m
+                list_targets_m = targets_m
+                list_pred_c = pred_c
+                list_targets_c = targets_c
             else:
-                for i in range(len(mask_stat_score)):
-                    dataset_mask_stat_score[i] = torch.cat((dataset_mask_stat_score[i], mask_stat_score[i]), dim=0)
+                list_pred_m = torch.cat((list_pred_m, pred_m), dim=0)
+                list_pred_c = torch.cat((list_pred_c, pred_c), dim=0)
+                list_targets_m = torch.cat((list_targets_m, targets_m), dim=0)
+                list_targets_c = torch.cat((list_targets_c, targets_c), dim=0)
 
-                for i in range(5):
-                    dataset_cls_stat_score[i] = torch.cat([dataset_cls_stat_score[i], cls_stat_score[:,0]], dim=0)
-        for i in range(len(dataset_mask_stat_score)):
-            dataset_mask_stat_score[i] = dataset_mask_stat_score[i].squeeze()
+        acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro")
+        prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro")
+        recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro")
+        conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4)
 
-        for i in range(len(dataset_cls_stat_score)):
-            dataset_cls_stat_score[i] = dataset_cls_stat_score[i].squeeze()
-
-        dataset_mask_iou, dataset_mask_f1, dataset_cls_acc, dataset_cls_precision, dataset_cls_recall, dataset_confusion_matrix = epoch_end(dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc)
+        mask_stat_score = smp.metrics.get_stats(list_pred_m.long(), list_targets_m.long(), mode='binary', threshold=0.5)
+        acc_m = smp.metrics.accuracy(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                     reduction='macro')
+        iou_m = smp.metrics.iou_score(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                      reduction='macro')
+        f1_m = smp.metrics.f1_score(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                    reduction='macro')
 
         dataset_mutual_losses = torch.mean(torch.FloatTensor(dataset_mutual_losses)).item()
         mask_losses           = torch.mean(torch.FloatTensor(mask_losses)).item()
@@ -90,38 +83,43 @@ def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cud
         print(type+'_dataset_mutual_losses:', dataset_mutual_losses)
         print(type+'_mask_losses:', mask_losses)
         print(type+f"_cls_losses:", cls_losses)
-        print(type+f"_dataset_mask_iou:", dataset_mask_iou)
-        print(type+f"_dataset_mask_f1:", dataset_mask_f1)
-        print(type+f"_dataset_cls_acc:", dataset_cls_acc)
-        print(type+f"_dataset_cls_precision:", dataset_cls_precision)
-        print(type+f"_dataset_cls_recall:", dataset_cls_recall)
-        print(type+f"_dataset_confusion_matrix:", dataset_confusion_matrix)
+        print(type+f"_dataset_mask_acc:", acc_m)
+        print(type+f"_dataset_mask_iou:", iou_m)
+        print(type+f"_dataset_mask_f1:", f1_m)
+        print(type+f"_dataset_cls_acc:", acc_c)
+        print(type+f"_dataset_cls_precision:", prec_c)
+        print(type+f"_dataset_cls_recall:", recall_c)
+        print(type+f"_dataset_confusion_matrix:\n", conf_mat_c)
         print("----------------------------------------")
 
         wandb.log({type + '_dataset_mutual_losses': dataset_mutual_losses,
                    type + '_mask_losses': mask_losses,
                    type + "_cls_losses": cls_losses,
                    })
-
         wandb.log({
-            type + "_dataset_mask_iou": dataset_mask_iou
+            type + "_dataset_mask_acc": acc_m
         })
 
         wandb.log({
-            type + "_dataset_mask_f1": dataset_mask_f1
+            type + "_dataset_mask_iou": iou_m
         })
 
         wandb.log({
-            type + "_dataset_cls_acc": dataset_cls_acc
+            type + "_dataset_mask_f1": f1_m
         })
 
         wandb.log({
-            type + "_dataset_cls_precision": dataset_cls_precision
+            type + "_dataset_cls_acc": acc_c
         })
 
         wandb.log({
-            type + "_dataset_cls_recall": dataset_cls_recall
+            type + "_dataset_cls_precision": prec_c
         })
+
+        wandb.log({
+            type + "_dataset_cls_recall": recall_c
+        })
+
 
     model.train()
     return dataset_mutual_losses
@@ -130,7 +128,7 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
     loop = tqdm(loader)
     model.train()
 
-    dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc, dataset_mutual_losses, mask_losses, cls_losses = [], [], [], [], [], []
+    dataset_mutual_losses, mask_losses, cls_losses = [], [], []
 
     for batch_idx, (image, targets_m, targets_c) in enumerate(loop):
 
@@ -139,24 +137,24 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
 
         with torch.cuda.amp.autocast():
 
-            mask_loss, cls_loss, mask_stat_score, cls_stat_score, cls_acc = share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn, model)
-            loss = (mask_loss*alpha + (1-alpha)*cls_loss)
+            mask_loss, cls_loss, pred_m, pred_c = share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn,
+                                                             model)
+            loss = (mask_loss * alpha + (1 - alpha) * cls_loss)
 
             dataset_mutual_losses.append(loss)
             mask_losses.append(mask_loss)
             cls_losses.append(cls_loss)
 
-            dataset_cls_acc.append(cls_acc)
-            if len(dataset_mask_stat_score) <= 0:
-                dataset_mask_stat_score = list(mask_stat_score)
-                for i in range(5):
-                    dataset_cls_stat_score.append(cls_stat_score[:,i])
+            if batch_idx == 0:
+                list_pred_m = pred_m
+                list_targets_m = targets_m
+                list_pred_c = pred_c
+                list_targets_c = targets_c
             else:
-                for i in range(len(mask_stat_score)):
-                    dataset_mask_stat_score[i] = torch.cat((dataset_mask_stat_score[i], mask_stat_score[i]), dim=0)
-
-                for i in range(5):
-                    dataset_cls_stat_score[i] = torch.cat([dataset_cls_stat_score[i], cls_stat_score[:,0]], dim=0)
+                list_pred_m = torch.cat((list_pred_m, pred_m), dim=0)
+                list_pred_c = torch.cat((list_pred_c, pred_c), dim=0)
+                list_targets_m = torch.cat((list_targets_m, targets_m), dim=0)
+                list_targets_c = torch.cat((list_targets_c, targets_c), dim=0)
 
         # squeeze  dataset_mask_stat_score[i]
 
@@ -166,53 +164,61 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
         scaler.update()
         loop.set_postfix(loss=loss.item(), loss_mask=mask_loss.item(), loss_cls=cls_loss.item())
 
-    for i in range(len(dataset_mask_stat_score)):
-        dataset_mask_stat_score[i] = dataset_mask_stat_score[i].squeeze()
+    acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro")
+    prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro")
+    recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro")
+    conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4)
 
-    for i in range(len(dataset_cls_stat_score)):
-        dataset_cls_stat_score[i] = dataset_cls_stat_score[i].squeeze()
-
-    dataset_mask_iou, dataset_mask_f1, dataset_cls_acc, dataset_cls_precision, dataset_cls_recall, dataset_confusion_matrix = epoch_end(dataset_mask_stat_score, dataset_cls_stat_score, dataset_cls_acc)
+    mask_stat_score = smp.metrics.get_stats(list_pred_m.long(), list_targets_m.long(), mode='binary', threshold=0.5)
+    acc_m = smp.metrics.accuracy(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                 reduction='macro')
+    iou_m = smp.metrics.iou_score(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                  reduction='macro')
+    f1_m = smp.metrics.f1_score(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
+                                reduction='macro')
 
     dataset_mutual_losses = torch.mean(torch.FloatTensor(dataset_mutual_losses)).item()
-    mask_losses           = torch.mean(torch.FloatTensor(mask_losses)).item()
-    cls_losses            = torch.mean(torch.FloatTensor(cls_losses)).item()
+    mask_losses = torch.mean(torch.FloatTensor(mask_losses)).item()
+    cls_losses = torch.mean(torch.FloatTensor(cls_losses)).item()
+    print("EVAL:", "train")
+    print("train" + '_dataset_mutual_losses:', dataset_mutual_losses)
+    print("train" + '_mask_losses:', mask_losses)
+    print("train" + f"_cls_losses:", cls_losses)
+    print("train" + f"_dataset_mask_acc:", acc_m)
+    print("train" + f"_dataset_mask_iou:", iou_m)
+    print("train" + f"_dataset_mask_f1:", f1_m)
+    print("train" + f"_dataset_cls_acc:", acc_c)
+    print("train" + f"_dataset_cls_precision:", prec_c)
+    print("train" + f"_dataset_cls_recall:", recall_c)
+    print("train" + f"_dataset_confusion_matrix:\n", conf_mat_c)
+    print("----------------------------------------")
 
-    print('dataset_mutual_losses:', dataset_mutual_losses)
-    print('mask_losses:', mask_losses)
-    print("cls_losses:", cls_losses)
-    print("dataset_mask_iou:", dataset_mask_iou)
-    print("dataset_mask_f1:", dataset_mask_f1)
-    print("dataset_cls_acc:", dataset_cls_acc)
-    print("dataset_cls_precision:", dataset_cls_precision)
-    print("dataset_cls_recall:", dataset_cls_recall)
-    print("dataset_confusion_matrix:", dataset_confusion_matrix)
-    print("-----------------------------------")
-
-    type = 'train_'
-    wandb.log({type+'dataset_mutual_losses': dataset_mutual_losses,
-               type+'mask_losses': mask_losses,
-               type+"cls_losses": cls_losses,
+    wandb.log({"train" + '_dataset_mutual_losses': dataset_mutual_losses,
+               "train" + '_mask_losses': mask_losses,
+               "train" + "_cls_losses": cls_losses,
+               })
+    wandb.log({
+        "train" + "_dataset_mask_acc": acc_m
     })
 
     wandb.log({
-        type+"dataset_mask_iou": dataset_mask_iou
+        "train" + "_dataset_mask_iou": iou_m
     })
 
     wandb.log({
-        type+"dataset_mask_f1": dataset_mask_f1
+        "train" + "_dataset_mask_f1": f1_m
     })
 
     wandb.log({
-        type+"dataset_cls_acc": dataset_cls_acc
+        "train" + "_dataset_cls_acc": acc_c
     })
 
     wandb.log({
-        type+"dataset_cls_precision": dataset_cls_precision
+        "train" + "_dataset_cls_precision": prec_c
     })
 
     wandb.log({
-        type+"dataset_cls_recall": dataset_cls_recall
+        "train" + "_dataset_cls_recall": recall_c
     })
 
 

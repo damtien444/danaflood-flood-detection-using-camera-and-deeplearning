@@ -1,3 +1,4 @@
+import argparse
 import os
 
 import torch
@@ -12,14 +13,21 @@ from dataloader import Dataset
 from augmentation import get_training_augmentation, get_validation_augmentation
 from train_step import train_fn, check_performance
 
-ENCODER = 'mobilenet_v2'
-ENCODER_WEIGHTS = 'imagenet'
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('-e', "encoder", type=str, default='mobilenet_v2')
+parser.add_argument('-w', 'weights', type=str, default='imagenet')
+parser.add_argument('-c', 'colab', type=bool, default=True)
+
+args = parser.parse_args()
+
+ENCODER = args.encoder
+ENCODER_WEIGHTS = args.weights
 CLASSES = ['flood']
 # ACTIVATION = 'sigmoid' # could be None for logits or 'softmax2d' for multiclass segmentation
 DEVICE = 'cuda'
 
 
-IS_COLAB = True
+IS_COLAB = args.colab
 ROOT_FOLDER = r"E:/DATN_local"
 BATCH_SIZE = 2
 loss_fusion_coefficient = 0.7
@@ -34,7 +42,7 @@ if IS_COLAB:
     DRIVE_CHECKPOINTS_OUTPUT = "/content/drive/MyDrive/DAMQUANGTIEN_DATN_SPACE/CHECKPOINTS_OUTPUT"
     if not os.path.exists(DRIVE_OUTPUT_FOLDER):
         os.makedirs(DRIVE_OUTPUT_FOLDER)
-    BATCH_SIZE = 8
+    BATCH_SIZE = 16
 else:
     DRIVE_OUTPUT_FOLDER = None
     DRIVE_CHECKPOINTS_OUTPUT = None
@@ -58,7 +66,7 @@ CHECKPOINT_OUTPUT_PATH = ROOT_FOLDER + r"/MODEL_CHECKPOINTS/" + EXPERIMENT_NAME 
 
 LEARNING_RATE = 0.0001
 ENCODER_LEARNING_RATE = 1e-5
-DECODER_LEARNING_RATE = 1e-3
+DECODER_LEARNING_RATE = 1e-4
 
 
 if __name__ == "__main__":
