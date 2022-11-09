@@ -7,14 +7,14 @@ def get_training_augmentation():
 
         albu.HorizontalFlip(p=0.5),
         #
-        # albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=1, border_mode=0),
+        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=1, border_mode=0),
         #
         # albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
         # albu.RandomCrop(height=512, width=512, always_apply=True),
         albu.Resize(height=512, width=512),
         #
-        # albu.GaussNoise(p=0.2),
-        # albu.Perspective(p=0.5),
+        albu.GaussNoise(p=0.2),
+        albu.Perspective(p=0.3),
         #
         # albu.OneOf(
         #     [
@@ -25,14 +25,14 @@ def get_training_augmentation():
         #     p=0.9,
         # ),
         #
-        # albu.OneOf(
-        #     [
-        #         albu.Sharpen(p=1),
-        #         albu.Blur(blur_limit=3, p=1),
-        #         albu.MotionBlur(blur_limit=3, p=1),
-        #     ],
-        #     p=0.9,
-        # ),
+        albu.OneOf(
+            [
+                albu.Sharpen(p=1),
+                albu.Blur(blur_limit=3, p=1),
+                albu.MotionBlur(blur_limit=3, p=1),
+            ],
+            p=0.3,
+        ),
         #
         # albu.OneOf(
         #     [
