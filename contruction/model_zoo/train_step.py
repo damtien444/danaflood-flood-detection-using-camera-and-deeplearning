@@ -96,6 +96,7 @@ def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cud
         print(type+f"_dataset_cls_precision:", dataset_cls_precision)
         print(type+f"_dataset_cls_recall:", dataset_cls_recall)
         print(type+f"_dataset_confusion_matrix:", dataset_confusion_matrix)
+        print("----------------------------------------")
 
         wandb.log({type + '_dataset_mutual_losses': dataset_mutual_losses,
                    type + '_mask_losses': mask_losses,
@@ -186,6 +187,7 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
     print("dataset_cls_precision:", dataset_cls_precision)
     print("dataset_cls_recall:", dataset_cls_recall)
     print("dataset_confusion_matrix:", dataset_confusion_matrix)
+    print("-----------------------------------")
 
     type = 'train_'
     wandb.log({type+'dataset_mutual_losses': dataset_mutual_losses,

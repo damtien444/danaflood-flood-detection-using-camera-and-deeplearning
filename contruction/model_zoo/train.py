@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     best_perform = 1000
     for epoch in range(NUM_EPOCHS):
-
+        print("EPOCH ", epoch)
         train_fn(train_loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=loss_fusion_coefficient)
         val_mutual_loss = check_performance(valid_loader, model, "val", mask_loss_fn, cls_loss_fn, device=DEVICE, alpha=loss_fusion_coefficient)
         test_mutual_loss = check_performance(test_loader, model, "test", mask_loss_fn, cls_loss_fn, device=DEVICE, alpha=loss_fusion_coefficient)
@@ -140,3 +140,5 @@ if __name__ == "__main__":
 
             if IS_COLAB:
                 os.system(f"cp {CHECKPOINT_OUTPUT_PATH} {DRIVE_CHECKPOINTS_OUTPUT}")
+
+        print("-----------------------")
