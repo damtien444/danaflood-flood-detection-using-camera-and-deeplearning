@@ -35,7 +35,7 @@ loss_fusion_coefficient = 0.7
 NUM_EPOCHS = 30
 
 version = 1
-EXPERIMENT_NAME = ENCODER+"_"+ENCODER_WEIGHTS+"_"+str(version)
+EXPERIMENT_NAME = ENCODER+"_"+ENCODER_WEIGHTS+"_"+str(args.version)
 
 if IS_COLAB:
     ROOT_FOLDER = "/content"
