@@ -27,7 +27,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
     model.train()
     metric_monitor = MetricMonitor()
     for batch_idx, (data, targets_m, targets_c) in enumerate(loop):
-        data = data.to(device=DEVICE)
+        data = data.to(device=DEVICE).float()
         targets_m = targets_m.float().unsqueeze(1).to(device=DEVICE, non_blocking=True)
         targets_c = targets_c.type(torch.LongTensor).to(device=DEVICE, non_blocking=True)
 

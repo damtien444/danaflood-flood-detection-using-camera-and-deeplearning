@@ -77,7 +77,7 @@ def check_performance(loader, model, type, loss_fn, device="cuda"):
     with torch.no_grad():
 
         for batch_idx, (data, target_m, target_c) in enumerate(loader):
-            data = data.to(device)
+            data = data.to(device).float()
             target_m = target_m.to(device).unsqueeze(1)
             target_c = Variable(target_c.to(device))
 
