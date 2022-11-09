@@ -31,7 +31,7 @@ DEVICE = 'cuda'
 IS_COLAB = args.colab
 ROOT_FOLDER = r"E:/DATN_local"
 BATCH_SIZE = 2
-loss_fusion_coefficient = 0.5
+loss_fusion_coefficient = 0.3
 NUM_EPOCHS = 30
 
 version = 1
@@ -65,7 +65,7 @@ file_label = DATA_DIR + r"/level_label.json"
 
 CHECKPOINT_OUTPUT_PATH = ROOT_FOLDER + r"/MODEL_CHECKPOINTS/" + EXPERIMENT_NAME + ".pth.tar"
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.001
 ENCODER_LEARNING_RATE = 1e-5
 DECODER_LEARNING_RATE = 1e-4
 

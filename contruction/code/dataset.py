@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import torchvision.transforms as T
 
-# note: In case you writing your own dataset, please, make sure that:
+# note.py: In case you writing your own dataset, please, make sure that:
 #
 #       Images 🖼
 #           ✅ Images from dataset have the same size, required for packing images to a batch.
