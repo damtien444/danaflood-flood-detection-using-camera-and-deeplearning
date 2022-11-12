@@ -118,7 +118,7 @@ def get_preprocessing(preprocessing_fn, is_preprocess):
     """
     if is_preprocess:
         _transform = [
-            albu.Lambda(image=preprocessing_fn),
+            albu.Lambda(image=canny_preprocess),
             ToTensorV2(),
         ]
     else:
