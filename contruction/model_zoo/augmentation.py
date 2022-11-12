@@ -21,7 +21,7 @@ def auto_canny(image, o_threshold=0.2):
     # return the edged image
     return edged
 
-def canny_preprocess(img, debug=True):
+def canny_preprocess(img, **args):
     _preprocessing = T.Compose([
         T.ToPILImage(),
         T.Grayscale(),
@@ -43,8 +43,9 @@ def canny_preprocess(img, debug=True):
 #         T.ToPILImage(),
 #     ])
 
-    canny_mask = _preprocessing(img)
-    applied_mask = cv2.bitwise_and(img, canny_mask)
+    canny_mask = _preprocessing(img.astype(np.uint8))
+    # print(img.shape, canny_mask.shape, img.dtype, canny_mask.dtype)
+    applied_mask = cv2.bitwise_and(img, canny_mask.astype(np.float32))
     # result = _postprocessing(applied_mask)
     return applied_mask
 
@@ -87,14 +88,14 @@ def get_training_augmentation(is_preprocessing=False):
         #     ],
         #     p=0.9,
         # ),
-        albu.Normalize(),
+
     ]
     if is_preprocessing:
         train_transform.extend([
             albu.Lambda(image=canny_preprocess)
         ])
 
-    train_transform.extend([ToTensorV2()])
+    train_transform.extend([ albu.Normalize(), ToTensorV2()])
     return albu.Compose(train_transform)
 
 def get_validation_augmentation(is_preprocessing=False):
