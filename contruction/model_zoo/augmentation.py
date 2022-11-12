@@ -88,7 +88,6 @@ def get_training_augmentation():
         #     p=0.9,
         # ),
         albu.Normalize(),
-        ToTensorV2(),
     ]
     return albu.Compose(train_transform)
 
@@ -99,7 +98,6 @@ def get_validation_augmentation():
         # albu.RandomCrop(height=512, width=512, always_apply=True),
         albu.Resize(height=512, width=512),
         albu.Normalize(),
-        ToTensorV2(),
 
     ]
     return albu.Compose(test_transform)
@@ -108,7 +106,7 @@ def get_validation_augmentation():
 #     return x.transpose(2, 0, 1).astype('float32')
 
 
-def get_preprocessing(preprocessing_fn):
+def get_preprocessing(preprocessing_fn, is_preprocess):
     """Construct preprocessing transform
 
     Args:
@@ -118,9 +116,13 @@ def get_preprocessing(preprocessing_fn):
         transform: albumentations.Compose
 
     """
-
-    _transform = [
-        albu.Lambda(image=preprocessing_fn),
-        # albu.Lambda(image=ToTensorV2, mask=ToTensorV2),
-    ]
+    if is_preprocess:
+        _transform = [
+            albu.Lambda(image=preprocessing_fn),
+            ToTensorV2(),
+        ]
+    else:
+        _transform = [
+            ToTensorV2(),
+        ]
     return albu.Compose(_transform)

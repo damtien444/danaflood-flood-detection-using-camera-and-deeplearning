@@ -85,7 +85,7 @@ if __name__ == "__main__":
         y_train_dir,
         file_label=file_label,
         augmentation=get_training_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
+        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
         classes=CLASSES,
     )
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         y_valid_dir,
         file_label=file_label,
         augmentation=get_validation_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
+        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
         classes=CLASSES,
     )
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         y_test_dir,
         file_label=file_label,
         augmentation=get_validation_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
+        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
         classes=CLASSES,
     )
 
