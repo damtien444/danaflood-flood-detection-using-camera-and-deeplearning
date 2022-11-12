@@ -139,7 +139,7 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
 
             mask_loss, cls_loss, pred_m, pred_c = share_step(image, targets_m, targets_c, mask_loss_fn, cls_loss_fn,
                                                              model)
-            loss = (mask_loss * alpha + (1 - alpha) * cls_loss)
+            loss = (mask_loss * alpha + cls_loss)
 
             dataset_mutual_losses.append(loss)
             mask_losses.append(mask_loss)

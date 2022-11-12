@@ -23,6 +23,13 @@
 #       parse live video, record fps figure -> done
 #       thêm data đường bình thường -> tuning model -> rechosen data -> done
 #       retrain lại thử nghiệm -> done
-#       thử nghiệm với combine loss
-#       thuwử nghiệm với backbone model
-#       bắt đầu viết song song với
+#       thử nghiệm với combine loss -> done
+#       thuwử nghiệm với backbone model -> done
+#       tạo bảng quantitative analysis giữa các model
+#       Điều chỉnh inference -> done, và thực hiện qualitative analysis
+#       record video troi nang/tanh rao
+#       bắt đầu viết bài báo
+#       viết api gồm các route get
+#       viet trang web demo bang streamlit
+#           https://discuss.streamlit.io/t/streamlit-autorefresh/14519
+#           metrics, chart, image, 

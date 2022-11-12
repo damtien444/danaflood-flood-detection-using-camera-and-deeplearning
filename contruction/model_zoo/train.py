@@ -10,7 +10,7 @@ import segmentation_models_pytorch as smp
 from utils import draw_ROC_ConfusionMatrix_PE
 from utils import save_checkpoint
 from dataloader import Dataset
-from augmentation import get_training_augmentation, get_validation_augmentation
+from augmentation import get_training_augmentation, get_validation_augmentation, canny_preprocess, get_preprocessing
 from train_step import train_fn, check_performance
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -18,6 +18,10 @@ parser.add_argument('-e', "--encoder", type=str, default='mobilenet_v2')
 parser.add_argument('-w', '--weights', type=str, default='imagenet')
 parser.add_argument("-v", '--version', type=str, default='1')
 parser.add_argument('-c', '--colab', type=bool, default=True)
+parser.add_argument('-b', '--batch', type=int, default=8)
+parser.add_argument('-ep', '--epoch', type=int, default=20)
+parser.add_argument('-prep', '--preprocessing', type=bool, default=False)
+parser.add_argument('-alpha', '--alpha', type=float, default=0.5)
 
 args = parser.parse_args()
 
@@ -30,11 +34,10 @@ DEVICE = 'cuda'
 
 IS_COLAB = args.colab
 ROOT_FOLDER = r"E:/DATN_local"
-BATCH_SIZE = 2
-loss_fusion_coefficient = 0.3
-NUM_EPOCHS = 30
+BATCH_SIZE = args.batch
+loss_fusion_coefficient = args.alpha
+NUM_EPOCHS = args.epoch
 
-version = 1
 EXPERIMENT_NAME = ENCODER+"_"+ENCODER_WEIGHTS+"_"+str(args.version)
 
 if IS_COLAB:
@@ -43,7 +46,7 @@ if IS_COLAB:
     DRIVE_CHECKPOINTS_OUTPUT = "/content/drive/MyDrive/DAMQUANGTIEN_DATN_SPACE/CHECKPOINTS_OUTPUT"
     if not os.path.exists(DRIVE_OUTPUT_FOLDER):
         os.makedirs(DRIVE_OUTPUT_FOLDER)
-    BATCH_SIZE = 8
+    BATCH_SIZE = args.batch
 else:
     DRIVE_OUTPUT_FOLDER = None
     DRIVE_CHECKPOINTS_OUTPUT = None
@@ -74,12 +77,15 @@ if __name__ == "__main__":
 
     wandb.init(project="UNET_FLOOD", entity="damtien440")
 
+    preprocessing_fn = canny_preprocess
+
+
     train_dataset = Dataset(
         x_train_dir,
         y_train_dir,
         file_label=file_label,
         augmentation=get_training_augmentation(),
-        # preprocessing=get_preprocessing(preprocessing_fn),
+        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
         classes=CLASSES,
     )
 
@@ -88,7 +94,7 @@ if __name__ == "__main__":
         y_valid_dir,
         file_label=file_label,
         augmentation=get_validation_augmentation(),
-        # preprocessing=get_preprocessing(preprocessing_fn),
+        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
         classes=CLASSES,
     )
 
@@ -97,7 +103,7 @@ if __name__ == "__main__":
         y_test_dir,
         file_label=file_label,
         augmentation=get_validation_augmentation(),
-        # preprocessing=get_preprocessing(preprocessing_fn),
+        preprocessing=get_preprocessing(preprocessing_fn) if args.preprocessing else None,
         classes=CLASSES,
     )
 
