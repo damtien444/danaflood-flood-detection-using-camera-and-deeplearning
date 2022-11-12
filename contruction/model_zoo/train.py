@@ -77,15 +77,13 @@ if __name__ == "__main__":
 
     wandb.init(project="UNET_FLOOD", entity="damtien440")
 
-    preprocessing_fn = canny_preprocess
 
 
     train_dataset = Dataset(
         x_train_dir,
         y_train_dir,
         file_label=file_label,
-        augmentation=get_training_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
+        augmentation=get_training_augmentation(args.preprocessing),
         classes=CLASSES,
     )
 
@@ -93,8 +91,7 @@ if __name__ == "__main__":
         x_valid_dir,
         y_valid_dir,
         file_label=file_label,
-        augmentation=get_validation_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
+        augmentation=get_validation_augmentation(args.preprocessing),
         classes=CLASSES,
     )
 
@@ -102,8 +99,7 @@ if __name__ == "__main__":
         x_test_dir,
         y_test_dir,
         file_label=file_label,
-        augmentation=get_validation_augmentation(),
-        preprocessing=get_preprocessing(preprocessing_fn, args.preprocessing),
+        augmentation=get_validation_augmentation(args.preprocessing),
         classes=CLASSES,
     )
 

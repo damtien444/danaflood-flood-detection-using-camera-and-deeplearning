@@ -48,7 +48,7 @@ def canny_preprocess(img, debug=True):
     # result = _postprocessing(applied_mask)
     return applied_mask
 
-def get_training_augmentation():
+def get_training_augmentation(is_preprocessing=False):
     train_transform = [
 
         albu.HorizontalFlip(p=0.5),
@@ -89,9 +89,15 @@ def get_training_augmentation():
         # ),
         albu.Normalize(),
     ]
+    if is_preprocessing:
+        train_transform.extend([
+            albu.Lambda(image=canny_preprocess)
+        ])
+
+    train_transform.extend([ToTensorV2()])
     return albu.Compose(train_transform)
 
-def get_validation_augmentation():
+def get_validation_augmentation(is_preprocessing=False):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
         # albu.PadIfNeeded(512, 512),
@@ -100,6 +106,12 @@ def get_validation_augmentation():
         albu.Normalize(),
 
     ]
+    if is_preprocessing:
+        test_transform.extend([
+            albu.Lambda(image=canny_preprocess)
+        ])
+
+    test_transform.extend([ToTensorV2()])
     return albu.Compose(test_transform)
 
 # def to_tensor(x, **kwargs):
