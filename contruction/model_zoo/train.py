@@ -7,6 +7,7 @@ from torch import optim, nn
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
+from model import UNET
 from utils import draw_ROC_ConfusionMatrix_PE
 from utils import save_checkpoint
 from dataloader import Dataset
@@ -112,20 +113,24 @@ if __name__ == "__main__":
         activation=None,      # activation function, default is None
         classes=4,                 # define number of output labels
     )
-    model = smp.Unet(encoder_name=ENCODER, encoder_weights=ENCODER_WEIGHTS, classes=1, aux_params=aux_params)
+
+    if "my_unet" in args.encoder:
+        model = UNET(in_channels=3, out_channels=1)
+        optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    else:
+        model = smp.Unet(encoder_name=ENCODER, encoder_weights=ENCODER_WEIGHTS, classes=1, aux_params=aux_params)
+        optimizer = optim.Adam(
+            [
+                {"params": model.encoder.parameters(), "lr": ENCODER_LEARNING_RATE},
+                {"params": model.decoder.parameters(), "lr": DECODER_LEARNING_RATE},
+                {"params": model.classification_head.parameters()}
+            ],
+            lr=LEARNING_RATE)
+
     model.to(DEVICE)
 
     mask_loss_fn = smp.losses.DiceLoss(mode="binary")
     cls_loss_fn = nn.CrossEntropyLoss()
-
-
-    optimizer = optim.Adam(
-        [
-            {"params": model.encoder.parameters(), "lr": ENCODER_LEARNING_RATE},
-            {"params": model.decoder.parameters(), "lr": DECODER_LEARNING_RATE},
-            {"params": model.classification_head.parameters()}
-        ],
-        lr=LEARNING_RATE)
 
     wandb.watch(model, optimizer, log="all")
 

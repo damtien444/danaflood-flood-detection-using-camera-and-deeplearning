@@ -45,7 +45,7 @@ def canny_preprocess(img, **args):
 
     canny_mask = _preprocessing(img.astype(np.uint8))
     # print(img.shape, canny_mask.shape, img.dtype, canny_mask.dtype)
-    applied_mask = cv2.bitwise_and(img, canny_mask.astype(np.float32))
+    applied_mask = cv2.bitwise_and(img, canny_mask)
     # result = _postprocessing(applied_mask)
     return applied_mask
 
@@ -104,7 +104,7 @@ def get_validation_augmentation(is_preprocessing=False):
         # albu.PadIfNeeded(512, 512),
         # albu.RandomCrop(height=512, width=512, always_apply=True),
         albu.Resize(height=512, width=512),
-        albu.Normalize(),
+
 
     ]
     if is_preprocessing:
@@ -112,7 +112,7 @@ def get_validation_augmentation(is_preprocessing=False):
             albu.Lambda(image=canny_preprocess)
         ])
 
-    test_transform.extend([ToTensorV2()])
+    test_transform.extend([albu.Normalize(),ToTensorV2()])
     return albu.Compose(test_transform)
 
 # def to_tensor(x, **kwargs):
