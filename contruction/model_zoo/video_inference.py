@@ -10,7 +10,9 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import segmentation_models_pytorch as smp
 from augmentation import get_validation_augmentation
+from model import UNET
 from utils import load_checkpoint
+import torchvision.transforms as T
 
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -31,6 +33,7 @@ if __name__ == "__main__":
     DEVICE = args.device
     online = args.online
     check_point_path = args.path
+    video_collect = True
 
 
     aux_params = dict(
@@ -38,7 +41,10 @@ if __name__ == "__main__":
         activation=None,  # activation function, default is None
         classes=4,  # define number of output labels
     )
-    model = smp.Unet(encoder_name=ENCODER, encoder_weights='imagenet', classes=1, aux_params=aux_params)
+    if "my_unet" in ENCODER:
+        model = UNET(in_channels=3, out_channels=1)
+    else:
+        model = smp.Unet(encoder_name=ENCODER, encoder_weights='imagenet', classes=1, aux_params=aux_params)
     model.to(DEVICE)
 
     load_checkpoint(torch.load(check_point_path), model)
@@ -56,7 +62,8 @@ if __name__ == "__main__":
 
     if online:
         # url = "https://www.youtube.com/watch?v=1M2IE21aUy4"
-        url = "https://www.youtube.com/watch?v=oAMqoAaxPl4"
+        # url = "https://www.youtube.com/watch?v=fiWopDJ3rCs"
+        url = "https://www.youtube.com/watch?v=-y6ql2bacSo"
         video = pafy.new(url)
         best = video.getbest()
         streams = video.streams
@@ -72,10 +79,10 @@ if __name__ == "__main__":
         capture = cv2.VideoCapture(url_fullhd)
 
     else:
-        # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
+        capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
         # capture = cv2.VideoCapture(0)
         # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
-        capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4")
+        # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4")
 
     total_pixel = 512*512
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -95,6 +102,13 @@ if __name__ == "__main__":
     ret, mask_plot = cv2.threshold(plt2gray, 1, 255, cv2.THRESH_BINARY)
     ax = plt.gca()
 
+    if video_collect:
+        width = capture.get(3)  # float `width`
+        height = capture.get(4) # float `height`
+        cnt = 0
+        max_length = 100
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter(f'{ENCODER}_norain.avi', fourcc, 25, (int(width), int(height)))
 
     with torch.no_grad():
         while True:
@@ -109,26 +123,29 @@ if __name__ == "__main__":
                 image = transform(image=image)['image']
                 image = image.to(device=DEVICE)
                 image = image.unsqueeze(0)
-                fps_preprocess = int(1/(time.time()-start_preprocess))
+                fps_preprocess = int(1./(time.time()-(start_preprocess) +1e-10))
                 #
                 start_inference = time.time()
                 prediction_mask, prediction_class = model(image)
                 inference_time = time.time() - start_inference
-                fps_inference = int(1 / inference_time)
+                fps_inference = int(1. / (inference_time+1e-10))
 
                 start_postprocess = time.time()
                 prediction_mask = torch.sigmoid(prediction_mask)
                 prediction_mask = (prediction_mask > 0.5).float()
-                count_flood_pixel = prediction_mask.sum()
-                prediction_mask = prediction_mask.squeeze(1).reshape((512, 512, 1))
-                prediction_mask = np.array(prediction_mask.cpu())
-                gray_mask = cv2.cvtColor(prediction_mask*255,cv2.COLOR_GRAY2RGB).astype(np.uint8)
-                frame = frame.astype(np.uint8)
-                gray_mask = cv2.resize(gray_mask, frame.shape[1::-1])
+                count_flood_pixel = torch.sum(prediction_mask)
+                prediction_mask = prediction_mask*255
+                prediction_mask = prediction_mask.squeeze(1).squeeze(1).repeat(3,1,1).permute(1, 2, 0)
+                prediction_mask = np.array(prediction_mask.cpu()).astype(np.uint8)
+                # gray_mask = cv2.cvtColor(prediction_mask,cv2.COLOR_GRAY2RGB).astype(np.uint8)
+                # dst = prediction_mask
+
+                # frame = frame.astype(np.uint8)
+                gray_mask = cv2.resize(prediction_mask, frame.shape[1::-1])
                 dst = cv2.addWeighted(frame, alpha , gray_mask, 1-alpha, 0)
 
                 class_pred = int(torch.argmax(prediction_class, dim=1).cpu())
-                fps_postprocess = int(1/(time.time()-start_postprocess))
+                fps_postprocess = int(1./(time.time()-start_postprocess+1e-8))
 
                 height, witdh, channel = dst.shape
                 textsize = cv2.getTextSize(label[class_pred], font, 0.5, 1)[0]
@@ -155,6 +172,11 @@ if __name__ == "__main__":
                 roi[np.where(mask_plot)]=0
                 roi += plot
 
+                if video_collect:
+                    video.write(dst)
+                    cnt += 1
+                    if cnt > max_length:
+                        break
 
                 cv2.imshow("Flood Detection", dst)
                 if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -169,4 +191,6 @@ if __name__ == "__main__":
 
     # When everything done, release the video capture object
     capture.release()
+    if video_collect:
+        video.release()
 

@@ -32,4 +32,10 @@
 #       viết api gồm các route get
 #       viet trang web demo bang streamlit
 #           https://discuss.streamlit.io/t/streamlit-autorefresh/14519
-#           metrics, chart, image, 
+#           metrics, chart, image,
+
+# todo: ngày 20/11 gửi paper cho thầy 
+#       nêu rõ phần đóng góp cụ thể trong file paper
+#       thêm augmentation, thêm thực nghiệm loss, thêm service api truy vấn và website demo
+#           gửi hồ sơ Ritsumeikan cho thầy
+#       hoàn thành bài báo
