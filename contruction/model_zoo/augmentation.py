@@ -54,20 +54,20 @@ def get_training_augmentation(is_preprocessing=False):
 
         albu.HorizontalFlip(p=0.5),
         #
-        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=1, border_mode=0),
+        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=0.5, border_mode=0),
         #
         albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
         albu.RandomCrop(height=512, width=512),
         albu.Resize(height=512, width=512),
         #
-        albu.GaussNoise(p=0.2),
-        albu.Perspective(p=0.3),
+        albu.GaussNoise(p=0.5),
+        albu.Perspective(p=0.5),
         #
         albu.OneOf(
             [
                 albu.CLAHE(p=1),
-                albu.RandomBrightness(p=1),
-                albu.RandomGamma(p=1),
+                albu.RandomBrightness(p=1, limit=0.1),
+                albu.RandomGamma(p=1, gamma_limit=0.1),
             ],
             p=0.9,
         ),
@@ -78,7 +78,7 @@ def get_training_augmentation(is_preprocessing=False):
                 albu.Blur(blur_limit=3, p=1),
                 albu.MotionBlur(blur_limit=3, p=1),
             ],
-            p=0.3,
+            p=0.9,
         ),
         #
         albu.OneOf(
