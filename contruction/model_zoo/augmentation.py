@@ -52,15 +52,15 @@ def canny_preprocess(img, **args):
 def get_training_augmentation(is_preprocessing=False):
     train_transform = [
 
-        albu.HorizontalFlip(p=0.2),
+        albu.HorizontalFlip(p=0.5),
         #
-        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=0.5, border_mode=0),
+        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.2, p=0.5, border_mode=0),
         #
         albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
         albu.Resize(height=512, width=512),
         #
-        albu.GaussNoise(p=0.5),
-        albu.Perspective(p=0.5),
+        albu.GaussNoise(p=0.7),
+        albu.Perspective(p=0.7),
         #
         albu.OneOf(
             [
