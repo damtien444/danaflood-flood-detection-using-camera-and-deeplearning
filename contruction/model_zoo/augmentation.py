@@ -52,7 +52,7 @@ def canny_preprocess(img, **args):
 def get_training_augmentation(is_preprocessing=False):
     train_transform = [
 
-        albu.HorizontalFlip(p=0.5),
+        albu.HorizontalFlip(p=0.2),
         #
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.1, p=0.5, border_mode=0),
         #
@@ -66,8 +66,8 @@ def get_training_augmentation(is_preprocessing=False):
         albu.OneOf(
             [
                 albu.CLAHE(p=1),
-                albu.RandomBrightness(p=1, limit=0.1),
-                albu.RandomGamma(p=1, gamma_limit=0.1),
+                albu.RandomBrightness(p=1),
+                albu.RandomGamma(p=1),
             ],
             p=0.9,
         ),
