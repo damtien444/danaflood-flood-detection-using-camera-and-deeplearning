@@ -1,21 +1,19 @@
 import argparse
-import time
+import csv
+import os
+from datetime import datetime
 
-import PIL
 import cv2
 import numpy as np
 import pafy
-import torch
-from PIL import Image
-from matplotlib import pyplot as plt
 import segmentation_models_pytorch as smp
+import torch
+
 from model_zoo.augmentation import get_validation_augmentation
 from model_zoo.model import UNET
 from model_zoo.utils import load_checkpoint
-import torchvision.transforms as T
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
+# python inference_app.py -e mobilenet_v2 -p "E:\DATN_local\1_IN_USED_CHECKPOINTS\drive-download-20221115T041425Z-001\mobilenet_v2_imagenet_1.pth.tar" -o True -u "https://www.youtube.com/watch?v=-y6ql2bacSo" -csv "E:\DATN_local\2_HISTORY_INFERENCE" -n TEST
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('-e', "--encoder", type=str, default='mobilenet_v2')
@@ -24,8 +22,19 @@ parser.add_argument('-p', '--path', type=str, default='')
 parser.add_argument("-v", '--version', type=str, default='1')
 parser.add_argument('-d', '--device', type=str, default='cuda')
 parser.add_argument('-o', '--online', type=bool, default=False)
+parser.add_argument('-u', '--url', type=str, default='')
+parser.add_argument('-csv', '--csv', type=str)
+parser.add_argument('-n', '--name', type=str)
 
 args = parser.parse_args()
+
+def write_log(path_to_csv, value, debug=False):
+
+    with open(path_to_csv, 'a', newline='',) as f:
+        writer = csv.writer(f)
+        writer.writerow(value)
+        if debug:
+            print(f"append log {path_to_csv}:",value)
 
 if __name__ == "__main__":
 
@@ -34,7 +43,11 @@ if __name__ == "__main__":
     online = args.online
     check_point_path = args.path
     video_collect = False
-
+    url = args.url
+    live_name = args.name
+    csv_path = args.csv + os.sep + ENCODER + "_" + live_name +".json"
+    debug = False
+    total_pixel = 512*512
 
     aux_params = dict(
         pooling='avg',  # one of 'avg', 'max'
@@ -58,12 +71,9 @@ if __name__ == "__main__":
         3: "Dangerous water in the way!"
     }
 
-
-
     if online:
         # url = "https://www.youtube.com/watch?v=1M2IE21aUy4"
         # url = "https://www.youtube.com/watch?v=fiWopDJ3rCs"
-        url = "https://www.youtube.com/watch?v=-y6ql2bacSo"
         video = pafy.new(url)
         best = video.getbest()
         streams = video.streams
@@ -80,27 +90,9 @@ if __name__ == "__main__":
 
     else:
         capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
-        # capture = cv2.VideoCapture(0)
-        # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
-        # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4")
-
-    total_pixel = 512*512
-    font = cv2.FONT_HERSHEY_SIMPLEX
 
     prev_time = 0
-    alpha = 0.9
-    fig = plt.figure()
-    x1 = np.linspace(0.0, 100.0)
-    y1 = [0 for i in range(len(x1))]
-    line1, = plt.plot(x1, y1, 'b.-.')
-    fig.canvas.draw()
-    plot = PIL.Image.frombytes('RGB', fig.canvas.get_width_height(),fig.canvas.tostring_rgb())
-    plot = np.array(plot).astype(np.uint8)
-    size = 300
-    plot = cv2.resize(plot, (size, size))
-    plt2gray = cv2.cvtColor(plot, cv2.COLOR_RGB2GRAY)
-    ret, mask_plot = cv2.threshold(plt2gray, 1, 255, cv2.THRESH_BINARY)
-    ax = plt.gca()
+    alpha = 0.5
 
     if video_collect:
         width = capture.get(3)  # float `width`
@@ -170,40 +162,17 @@ if __name__ == "__main__":
                 fps_inference = 1./(start_inference.elapsed_time(end_inference)/1000)
                 fps_postprocess = 1./(start_postprocess.elapsed_time(end_postprocess)/1000)
 
-                height, witdh, channel = dst.shape
-                textsize = cv2.getTextSize(label[class_pred], font, 0.5, 1)[0]
-                textX = (dst.shape[1] - textsize[0]) // 2
-                textY = (dst.shape[0] + textsize[1]) // 2
-                cv2.putText(dst, "Advice: "+ label[class_pred], (textX, textY), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Pre-processing FPS: "+str(fps_preprocess), (7, 60), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Inference FPS: " + str(fps_inference), (7, 80), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Post-processing FPS: "+str(fps_postprocess), (7, 100), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                time_stamp = datetime.now()
+                sofi = (count_flood_pixel / total_pixel).item()
+                recording = [time_stamp, class_pred, sofi]
+                write_log(csv_path, recording, debug=True)
 
-                sofi = (count_flood_pixel/total_pixel).item()
-                y1.pop(0)
-                y1.append(sofi)
-                line1.set_ydata(y1)
-                ax.set_ylim([0, 1])
-                ax.autoscale_view()
-                fig.canvas.draw()
-                plot = PIL.Image.frombytes('RGB', fig.canvas.get_width_height(),fig.canvas.tostring_rgb())
-                plot = np.array(plot).astype(np.uint8)
-                # img is rgb, convert to opencv's default bgr
-                plot = cv2.cvtColor(plot, cv2.COLOR_RGB2BGR)
-                plot = cv2.resize(plot, (size, size))
-                roi = dst[-size-10:-10, -size-10:-10]
-                roi[np.where(mask_plot)]=0
-                roi += plot
+                if debug:
+                    cv2.imshow("Flood Detection", dst)
 
-                if video_collect:
-                    video.write(dst)
-                    cnt += 1
-                    if cnt > max_length:
+
+                    if cv2.waitKey(25) & 0xFF == ord('q'):
                         break
-
-                cv2.imshow("Flood Detection", dst)
-                if cv2.waitKey(25) & 0xFF == ord('q'):
-                    break
 
 
 
@@ -214,6 +183,5 @@ if __name__ == "__main__":
 
     # When everything done, release the video capture object
     capture.release()
-    if video_collect:
-        video.release()
+
 

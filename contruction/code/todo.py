@@ -27,9 +27,9 @@
 #       thuwử nghiệm với backbone model -> done
 #       tạo bảng quantitative analysis giữa các model
 #       Điều chỉnh inference -> done, và thực hiện qualitative analysis
-#       record video troi nang/tanh rao
+#       record video troi nang/tanh rao -> done
 #       bắt đầu viết bài báo
-#       viết api gồm các route get
+#       viết loop inference rồi lưu file, sau đó app streamlit reload data đó để lấy data hiện dashboard cho người dùng
 #       viet trang web demo bang streamlit
 #           https://discuss.streamlit.io/t/streamlit-autorefresh/14519
 #           metrics, chart, image,

@@ -45,9 +45,10 @@ if __name__ == "__main__":
     check_point_path = args.path
     DEVICE = args.device
 
-    with open('fps_results.json', 'r') as f:
-        test_result = json.load(f)
-        print("reload")
+    # with open('fps_results.json', 'r') as f:
+    #     test_result = json.load(f)
+    #     print("reload")
+    test_result = {}
 
     for file in os.listdir(check_point_path):
 
@@ -72,7 +73,8 @@ if __name__ == "__main__":
         # load_checkpoint(torch.load(path), model)
 
         total_params = numel(model)
-        test_result["number_param_"+ENCODER] = total_params
+        test_result[ENCODER] = {}
+        test_result[ENCODER]["number_param"] = total_params
         print(ENCODER, total_params)
 
         transform = get_validation_augmentation()
@@ -95,6 +97,9 @@ if __name__ == "__main__":
 
                     cnt+=1
 
+                    start_inference = torch.cuda.Event(enable_timing=True)
+                    end_inference = torch.cuda.Event(enable_timing=True)
+
                     # Display the resulting frame
                     # cv2.imshow('Frame', frame)
                     # start_preprocess = time.time()
@@ -104,21 +109,26 @@ if __name__ == "__main__":
                     image = image.unsqueeze(0)
                     # fps_preprocess = int(1/(time.time()-start_preprocess + 1e-8))
                     #
-                    start_inference = time.time()
+                    start_inference.record()
                     prediction_mask, prediction_class = model(image)
-                    inference_time = time.time() - start_inference
-                    fps_inference = time_inference.append(inference_time)
+                    # inference_time = time.time() - start_inference
+                    # fps_inference = int(1. / (inference_time+1e-10))
+                    end_inference.record()
+                    torch.cuda.synchronize()
+                    fps_inference = 1. / (start_inference.elapsed_time(end_inference) / 1000)
+                    time_inference.append(start_inference.elapsed_time(end_inference) / 1000)
 
                     if cnt > max_cnt:
                         break
 
-        test_result[ENCODER+"_"+DEVICE+"_fps"] =  [sum(time_inference) / len(time_inference), len(time_inference)/sum(time_inference)]
+        # test_result[ENCODER+"_"+DEVICE+"_fps"] =  [sum(time_inference) / len(time_inference), len(time_inference)/sum(time_inference)]
+        test_result[ENCODER]["fps"] = [sum(time_inference) / len(time_inference), len(time_inference)/sum(time_inference)]
         print(f"{ENCODER}\t{sum(time_inference) / len(time_inference)}\t{len(time_inference)/sum(time_inference) }")
 
         # When everything done, release the video capture object
         capture.release()
 
-    with open('param_number_results.json', 'w') as f:
+    with open('performance_test.json', 'w') as f:
         json.dump(test_result, f)
         print("save_test_result")
 
