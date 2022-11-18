@@ -169,7 +169,7 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
     recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro")
     conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4)
 
-    mask_stat_score = smp.metrics.get_stats(list_pred_m.uint8(), list_targets_m.uint8(), mode='binary', threshold=0.5)
+    mask_stat_score = smp.metrics.get_stats(list_pred_m.byte(), list_targets_m.byte(), mode='binary', threshold=0.5)
     acc_m = smp.metrics.accuracy(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
                                  reduction='macro')
     iou_m = smp.metrics.iou_score(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
