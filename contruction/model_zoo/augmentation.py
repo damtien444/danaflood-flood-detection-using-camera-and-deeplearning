@@ -57,7 +57,7 @@ def get_training_augmentation(is_preprocessing=False):
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.2, p=0.5, border_mode=0),
         #
         albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
-        albu.RandomCrop(height=512, width=512, p=0.5),
+        albu.RandomCrop(height=512, width=512, p=0.2),
         albu.Resize(height=512, width=512),
         #
         albu.GaussNoise(p=0.5),
@@ -95,7 +95,8 @@ def get_training_augmentation(is_preprocessing=False):
             albu.Lambda(image=canny_preprocess)
         ])
 
-    train_transform.extend([albu.Normalize(), ToTensorV2()])
+    # train_transform.extend([albu.Normalize(), ToTensorV2()])
+    train_transform.extend([ToTensorV2()])
     return albu.Compose(train_transform)
 
 def get_validation_augmentation(is_preprocessing=False):
@@ -112,7 +113,7 @@ def get_validation_augmentation(is_preprocessing=False):
             albu.Lambda(image=canny_preprocess)
         ])
 
-    test_transform.extend([albu.Normalize(),ToTensorV2()])
+    test_transform.extend([ToTensorV2()])
     return albu.Compose(test_transform)
 
 # def to_tensor(x, **kwargs):

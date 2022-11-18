@@ -165,14 +165,8 @@ if __name__ == "__main__":
                 time_stamp = datetime.now()
                 sofi = (count_flood_pixel / total_pixel).item()
                 recording = [time_stamp, class_pred, sofi]
+
                 write_log(csv_path, recording, debug=True)
-
-                if debug:
-                    cv2.imshow("Flood Detection", dst)
-
-
-                    if cv2.waitKey(25) & 0xFF == ord('q'):
-                        break
 
 
 
