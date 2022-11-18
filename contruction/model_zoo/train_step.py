@@ -132,8 +132,8 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
 
     for batch_idx, (image, targets_m, targets_c) in enumerate(loop):
 
-        targets_m = targets_m.float().unsqueeze(1).to(device=device, non_blocking=True)
-        targets_c = targets_c.type(torch.LongTensor).to(device=device, non_blocking=True)
+        targets_m = targets_m.half().unsqueeze(1).to(device=device, non_blocking=True)
+        targets_c = targets_c.type(torch.ByteTensor).to(device=device, non_blocking=True)
 
         with torch.cuda.amp.autocast():
 
