@@ -95,8 +95,8 @@ def get_training_augmentation(is_preprocessing=False):
             albu.Lambda(image=canny_preprocess)
         ])
 
-    # train_transform.extend([albu.Normalize(), ToTensorV2()])
-    train_transform.extend([ToTensorV2()])
+    train_transform.extend([albu.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0,1.0,1.0], max_pixel_value=255.0), ToTensorV2()])
+    # train_transform.extend([ToTensorV2()])
     return albu.Compose(train_transform)
 
 def get_validation_augmentation(is_preprocessing=False):
@@ -113,7 +113,7 @@ def get_validation_augmentation(is_preprocessing=False):
             albu.Lambda(image=canny_preprocess)
         ])
 
-    test_transform.extend([ToTensorV2()])
+    test_transform.extend([albu.Normalize(mean=[0.0, 0.0, 0.0], std=[1.0,1.0,1.0], max_pixel_value=255.0), ToTensorV2()])
     return albu.Compose(test_transform)
 
 # def to_tensor(x, **kwargs):

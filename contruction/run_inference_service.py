@@ -148,6 +148,7 @@ def runner(model, stream_links):
                     single_image_mask = np.array(single_image_mask.cpu()).astype(np.uint8)
 
                     dst = cv2.addWeighted(np.array(origin_frame[i]).astype(np.uint8), alpha, single_image_mask, 1 - alpha, 0)
+                    # dst = cv2.addWeighted(np.array(images[i].permute(1, 2, 0).cpu()).astype(np.uint8), alpha, single_image_mask, 1 - alpha, 0)
 
                     logs[ids[i]].update(sofi.item(), single_image_cls.item())
 
