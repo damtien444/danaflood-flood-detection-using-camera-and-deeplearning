@@ -127,7 +127,7 @@ def get_latest_unique_warning(collection, no_id_and_image=True):
             del df['_id']
     return df
 
-
+#
 def insert_log(collection, name, cls_index, sofi, image):
     record = {
         'name': name,
