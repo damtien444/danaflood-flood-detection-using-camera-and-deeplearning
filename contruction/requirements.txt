@@ -3,4 +3,5 @@ plotly
 streamlit
 streamlit_autorefresh
 opencv-python
+opencv-python-headless==4.2.0.32
 pymongo
