@@ -1,1 +1,6 @@
-pandas, plotly, streamlit, streamlit_autorefresh, opencv-python, pymongo
+pandas
+plotly
+streamlit
+streamlit_autorefresh
+opencv-python
+pymongo
