@@ -1,0 +1,1 @@
+pandas, plotly, streamlit, streamlit_autorefresh, opencv-python, pymongo

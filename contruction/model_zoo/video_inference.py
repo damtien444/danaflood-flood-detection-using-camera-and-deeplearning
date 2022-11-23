@@ -9,9 +9,9 @@ import torch
 from PIL import Image
 from matplotlib import pyplot as plt
 import segmentation_models_pytorch as smp
-from model_zoo.augmentation import get_validation_augmentation
-from model_zoo.model import UNET
-from model_zoo.utils import load_checkpoint
+from augmentation import get_validation_augmentation
+from model import UNET
+from utils import load_checkpoint
 import torchvision.transforms as T
 
 import albumentations as A
@@ -46,6 +46,8 @@ if __name__ == "__main__":
     else:
         model = smp.Unet(encoder_name=ENCODER, encoder_weights='imagenet', classes=1, aux_params=aux_params)
     model.to(DEVICE)
+
+    model.eval()
 
     load_checkpoint(torch.load(check_point_path), model)
 

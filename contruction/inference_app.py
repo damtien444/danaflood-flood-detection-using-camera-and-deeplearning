@@ -168,8 +168,6 @@ if __name__ == "__main__":
 
                 write_log(csv_path, recording, debug=True)
 
-
-
         # Break the loop
         # else:
         #     print("stop running at: ", time.time(), cnt)
