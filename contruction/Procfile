@@ -1,0 +1,1 @@
+web: sh setup.sh && cd website && streamlit run streamlit_mongo.py
