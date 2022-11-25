@@ -138,3 +138,9 @@ def insert_log(collection, name, cls_index, sofi, image):
     }
 
     return collection.insert_one(record)
+
+
+def get_latest_timestamp(collection):
+    result = collection.find
+
+

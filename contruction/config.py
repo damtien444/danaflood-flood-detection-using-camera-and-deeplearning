@@ -22,7 +22,7 @@ input_camera_list = [
     (False, "https://www.youtube.com/watch?v=fiWopDJ3rCs", "NGUYENHUESCHOOL"),
     (False, "https://www.youtube.com/watch?v=3zH2GwsexiE", "PHUONGTRAN"),
     # (True, r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4", "Fast flood site"),
-    (True, r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4", "CAM_SITE_1"),
+    # (True, r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4", "CAM_SITE_1"),
     # (True, r"E:\DATN_local\3_DEMO\Site_2 - Made with Clipchamp.mp4", "CAM_SITE_2"),
     # (True, r"E:\DATN_local\3_DEMO\Site_3 - Made with Clipchamp.mp4", "CAM_SITE_3"),
 ]
@@ -34,7 +34,7 @@ DEVICE = 'cuda'
 check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\mobilenet_v2_imagenet_6.pth.tar"
 trace_folder = r"E:\DATN_local\2_TORCH_TRACE_MODELS"
 history_folder = r"E:\DATN_local\2_HISTORY_INFERENCE"
-logging_frequency = 10 #second
+logging_frequency = 180 #second
 batch_process_size = 2
 
 

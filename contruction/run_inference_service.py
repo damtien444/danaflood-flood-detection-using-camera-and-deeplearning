@@ -13,7 +13,7 @@ import pymongo
 import torch
 
 from config import model, transform, DEVICE, csv_log_file, history_image_log_folder, \
-    logging_frequency, files, input_camera_list
+    logging_frequency, files, input_camera_list, batch_process_size
 
 client = pymongo.MongoClient("mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority")
 db = client['danang_flood']
@@ -66,19 +66,6 @@ def write_log(path_to_csv, value, debug=False):
             print(f"append log {path_to_csv}:", value)
 
 
-# class TakeCameraLatestPictureThread(threading.Thread):
-#     def __init__(self, camera):
-#         self.camera = camera
-#         self.frame = None
-#         super().__init__()
-#         # Start thread
-#         self.start()
-#     def run(self):
-#         while True:
-#             ret, frame = self.camera.read()
-#             if ret:
-#                 self.frame = frame
-#             self.ret = ret
 
 
 class frequecy_average:
@@ -150,7 +137,7 @@ def producer_runner(queue):
             # time.sleep(logging_frequency / 10)
             now = time.time()
             #
-            if now - start[idx] < logging_frequency / 10:
+            if now - start[idx] < (logging_frequency // 10):
                 continue
 
             print(idx, _)
@@ -166,6 +153,7 @@ def producer_runner(queue):
         # print(len(batch_frame), len(batch_image), batch_idx)
 
         if len(batch_idx)>0:
+            print("producer send:", len(batch_image))
             queue.put((batch_frame, batch_image, batch_idx))
         # iterate through capture, get latest images
 
@@ -186,8 +174,48 @@ def consumer_runner(model, queue):
         while True:
 
             origin_frames, images, ids = queue.get()
+            print("consumer receive:", len(origin_frames))
 
-            if len(images) > 0:
+            if len(images) > batch_process_size:
+                for i in range(0, len(images), batch_process_size):
+                    print('consumer inference:', i, i+batch_process_size)
+                    batch_image = images[i:i+batch_process_size]
+                    batch_ids = ids[i:i+batch_process_size]
+                    batch_frames = origin_frames[i:i+batch_process_size]
+                    batch_image = torch.cat(batch_image)
+                    batch_image.to(DEVICE)
+
+                    prediction_masks, prediction_class = model(batch_image)
+
+                    prediction_masks = torch.sigmoid(prediction_masks)
+                    prediction_masks = (prediction_masks > 0.5).float()
+
+                    prediction_masks = prediction_masks.reshape((len(batch_image), 512, 512))
+                    class_preds = (torch.argmax(prediction_class, dim=1))
+
+                    for j in range(len(batch_image)):
+                        single_image_mask = prediction_masks[j]
+                        single_image_cls = class_preds[j]
+
+                        sofi = torch.sum(single_image_mask) / (512. * 512.)
+                        # ------
+
+                        single_image_mask = single_image_mask * 255
+                        single_image_mask = single_image_mask.squeeze(1).squeeze(1).repeat(3, 1, 1).permute(1, 2, 0)
+
+                        single_image_mask = np.array(single_image_mask.cpu()).astype(np.uint8)
+
+                        dst = cv2.addWeighted(np.array(batch_frames[j]).astype(np.uint8), alpha, single_image_mask,
+                                              1 - alpha, 0)
+                        # dst = cv2.addWeighted(np.array(images[i].permute(1, 2, 0).cpu()).astype(np.uint8), alpha, single_image_mask, 1 - alpha, 0)
+
+                        logs[batch_ids[j]].update(sofi.item(), single_image_cls.item())
+                        if time.time() - logs[batch_ids[j]].start > logging_frequency:
+                            print("LOG", logs[batch_ids[j]].start)
+                            sofi, cls = logs[batch_ids[j]].get()
+                            insert_log(names[batch_ids[j]], cls, sofi, image_encoding(dst))
+            elif len(images) > 0:
+                print('consumer inference:', len(images))
                 images = torch.cat(images)
                 images.to(DEVICE)
 
