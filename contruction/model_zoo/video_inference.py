@@ -33,7 +33,7 @@ if __name__ == "__main__":
     DEVICE = args.device
     online = args.online
     check_point_path = args.path
-    video_collect = False
+    video_collect = True
 
 
     aux_params = dict(
@@ -54,10 +54,10 @@ if __name__ == "__main__":
     transform = get_validation_augmentation()
 
     label = {
-        0: "No water",
-        1: "There's shallow water, not affected your route.",
-        2: "There's deep water, not recommend to enter the area!",
-        3: "Dangerous water in the way!"
+        0: "Level 0",
+        1: "Level 1",
+        2: "Level 2",
+        3: "Level 3"
     }
 
 
@@ -82,6 +82,7 @@ if __name__ == "__main__":
 
     else:
         capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
+        # capture = cv2.VideoCapture(r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4")
         # capture = cv2.VideoCapture(0)
         # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
         # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4")
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     font = cv2.FONT_HERSHEY_SIMPLEX
 
     prev_time = 0
-    alpha = 0.9
+    alpha = 0.75
     fig = plt.figure()
     x1 = np.linspace(0.0, 100.0)
     y1 = [0 for i in range(len(x1))]
@@ -108,9 +109,9 @@ if __name__ == "__main__":
         width = capture.get(3)  # float `width`
         height = capture.get(4) # float `height`
         cnt = 0
-        max_length = 100
+        max_length = 1000
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(f'{ENCODER}_norain.avi', fourcc, 25, (int(width), int(height)))
+        video = cv2.VideoWriter(f'demo_{ENCODER}_heaviflood.avi', fourcc, 25, (int(width), int(height)))
 
     with torch.no_grad():
         while True:
@@ -173,13 +174,13 @@ if __name__ == "__main__":
                 fps_postprocess = 1./(start_postprocess.elapsed_time(end_postprocess)/1000)
 
                 height, witdh, channel = dst.shape
-                textsize = cv2.getTextSize(label[class_pred], font, 0.5, 1)[0]
+                textsize = cv2.getTextSize(label[class_pred], font, 3.5, 10)[0]
                 textX = (dst.shape[1] - textsize[0]) // 2
                 textY = (dst.shape[0] + textsize[1]) // 2
-                cv2.putText(dst, "Advice: "+ label[class_pred], (textX, textY), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Pre-processing FPS: "+str(fps_preprocess), (7, 60), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Inference FPS: " + str(fps_inference), (7, 80), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText(dst, "Post-processing FPS: "+str(fps_postprocess), (7, 100), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.putText(dst, label[class_pred], (textX, textY), font, 3.5, (255, 255, 255), 10, cv2.LINE_AA)
+                cv2.putText(dst, "Pre-processing FPS: "+str(fps_preprocess), (7, height-150), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(dst, "Inference FPS: " + str(fps_inference), (7, height-100), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(dst, "Post-processing FPS: "+str(fps_postprocess), (7, height-50), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
                 sofi = (count_flood_pixel/total_pixel).item()
                 y1.pop(0)

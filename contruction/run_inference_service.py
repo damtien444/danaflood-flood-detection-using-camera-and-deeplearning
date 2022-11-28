@@ -12,7 +12,7 @@ import pafy
 import pymongo
 import torch
 
-from config import model, transform, DEVICE, csv_log_file, history_image_log_folder, \
+from config import model, transform, DEVICE, \
     logging_frequency, files, input_camera_list, batch_process_size
 
 client = pymongo.MongoClient("mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority")
@@ -22,32 +22,47 @@ collection = db['camera_logging']
 alpha = 0.5
 
 
-def get_captures(input):
+def get_captures(input, update_index=None, captures=None):
     # url = "https://www.youtube.com/watch?v=1M2IE21aUy4"
     # url = "https://www.youtube.com/watch?v=fiWopDJ3rCs"
-    captures = []
-    for idx, (type, stream_link, name) in enumerate(input):
-        if not type:
+    if update_index == None:
+        captures = []
+        for idx, (type, stream_link, name) in enumerate(input):
+            if not type:
+                video = pafy.new(stream_link)
+                best = video.getbest()
+                streams = video.streams
+
+                for s in streams:
+                    # print(s.resolution, s.extension, s.get_filesize(), s.url)
+                    if s.resolution == '1280x720':
+                        url_fullhd = s.url
+                        break
+
+
+                capture = cv2.VideoCapture(url_fullhd)
+                captures.append((idx, capture))
+            else:
+                capture = cv2.VideoCapture(stream_link)
+                captures.append((idx, capture))
+
+        return captures
+    else:
+        for idx in update_index:
+            (type, stream_link, name) = input[idx]
             video = pafy.new(stream_link)
             best = video.getbest()
             streams = video.streams
 
             for s in streams:
                 # print(s.resolution, s.extension, s.get_filesize(), s.url)
-                if s.resolution == '1920x1080':
+                if s.resolution == '1280x720':
                     url_fullhd = s.url
                     break
 
-            if best.url is not None:
-                url_fullhd = best.url
-
             capture = cv2.VideoCapture(url_fullhd)
-            captures.append((idx, capture))
-        else:
-            capture = cv2.VideoCapture(stream_link)
-            captures.append((idx, capture))
-
-    return captures
+            captures[idx] = (idx, capture)
+        return captures
 
 
 def transformation(image):
@@ -122,6 +137,12 @@ def producer_runner(queue):
 
     for i in range(len(captures)):
         start.append(0)
+
+    try_ = []
+
+    for i in range(len(captures)):
+        try_.append(True)
+
     while True:
         # time.sleep(logging_frequency/10)
 
@@ -129,16 +150,23 @@ def producer_runner(queue):
         batch_image = []
         batch_idx = []
         # for (idx, capture) in latest_frame:
+        to_be_update_capture = []
         for (idx, capture) in captures:
 
             # frame = capture.frame
             _, frame = capture.read()
             #
-            # time.sleep(logging_frequency / 10)
+            time.sleep(0.05) # read 24 frame
             now = time.time()
             #
             if now - start[idx] < (logging_frequency // 10):
                 continue
+
+            if try_[idx] == False and _ == False:
+                # retry to get renew capture object
+                to_be_update_capture.append(idx)
+
+            try_[idx] = _
 
             print(idx, _)
             start[idx] = time.time()
@@ -149,6 +177,9 @@ def producer_runner(queue):
                 batch_image.append(image)
                 batch_frame.append(frame)
                 batch_idx.append(idx)
+
+        if len(to_be_update_capture) > 0:
+            captures = get_captures(input_camera_list, to_be_update_capture, captures)
 
         # print(len(batch_frame), len(batch_image), batch_idx)
 
