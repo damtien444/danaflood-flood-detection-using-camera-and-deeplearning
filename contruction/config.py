@@ -1,5 +1,6 @@
 import datetime
 import os
+import time
 
 import torch
 
@@ -8,6 +9,9 @@ from model_zoo.model import UNET
 import segmentation_models_pytorch as smp
 
 from model_zoo.utils import load_checkpoint
+
+os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
+time.tzset()
 
 def create_dir(dir):
     if not os.path.isdir(dir):
@@ -64,6 +68,6 @@ else:
 
 # phải có model eval để batch chạy đúng
 model.eval()
-load_checkpoint(torch.load(check_point_path), model)
+load_checkpoint(torch.load(check_point_path, map_location=torch.device(DEVICE)), model )
 model.to(DEVICE)
 transform = get_validation_augmentation()
