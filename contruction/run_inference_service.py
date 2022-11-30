@@ -29,7 +29,12 @@ def get_captures(input, update_index=None, captures=None):
         captures = []
         for idx, (type, stream_link, name) in enumerate(input):
             if not type:
-                video = pafy.new(stream_link)
+                try:
+                    video = pafy.new(stream_link)
+                except:
+                    captures.append((idx, None))
+                    continue
+
                 best = video.getbest()
                 streams = video.streams
 
@@ -50,7 +55,11 @@ def get_captures(input, update_index=None, captures=None):
     else:
         for idx in update_index:
             (type, stream_link, name) = input[idx]
-            video = pafy.new(stream_link)
+            try:
+                video = pafy.new(stream_link)
+            except:
+                captures[idx] = (idx, None)
+                continue
             best = video.getbest()
             streams = video.streams
 
@@ -149,11 +158,15 @@ def producer_runner(queue):
         batch_frame = []
         batch_image = []
         batch_idx = []
-        # for (idx, capture) in latest_frame:
         to_be_update_capture = []
         for (idx, capture) in captures:
 
             # frame = capture.frame
+            # chưa cover trường hợp livestream bị not available -> bị dừng live thì các camera khác phải hoạt động bình thường
+            # todo: Viết một hàm evaluate stream health/status
+            if capture is None:
+                continue
+
             _, frame = capture.read()
             #
             time.sleep(0.05) # read 24 frame

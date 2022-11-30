@@ -67,7 +67,7 @@ else:
     model = smp.Unet(encoder_name=ENCODER, classes=1, aux_params=aux_params)
 
 # phải có model eval để batch chạy đúng
-model.eval()
 load_checkpoint(torch.load(check_point_path, map_location=torch.device(DEVICE)), model )
 model.to(DEVICE)
 transform = get_validation_augmentation()
+model.eval()

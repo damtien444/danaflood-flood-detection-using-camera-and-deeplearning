@@ -28,14 +28,19 @@
 #       tạo bảng quantitative analysis giữa các model
 #       Điều chỉnh inference -> done, và thực hiện qualitative analysis
 #       record video troi nang/tanh rao -> done
-#       bắt đầu viết bài báo
-#       viết loop inference rồi lưu file, sau đó app streamlit reload data đó để lấy data hiện dashboard cho người dùng
-#       viet trang web demo bang streamlit
+#       bắt đầu viết bài báo -> done
+#       viết loop inference rồi lưu file, sau đó app streamlit reload data đó để lấy data hiện dashboard cho người dùng -> done
+#       viet trang web demo bang streamlit ->
 #           https://discuss.streamlit.io/t/streamlit-autorefresh/14519
 #           metrics, chart, image,
 
 # todo: ngày 20/11 gửi paper cho thầy 
-#       nêu rõ phần đóng góp cụ thể trong file paper
+#       nêu rõ phần đóng góp cụ thể trong file paper -> done
 #       thêm augmentation, thêm thực nghiệm loss, thêm service api truy vấn và website demo
 #           gửi hồ sơ Ritsumeikan cho thầy
-#       hoàn thành bài báo
+#       hoàn thành bài báo -> done
+
+# todo: thêm data ban đêm -> quá ít dữ liệu ban đêm và chất lượng cao
+#       thêm data cleaning routine -> image of scene after 5 days will be delete, previous data resolution will be limit to 3 record per hour
+#       thêm window of observe -> user can change window of caring
+#       đối với camera scene quá nhạy thì thêm chỉ số giảm độ nhạy
