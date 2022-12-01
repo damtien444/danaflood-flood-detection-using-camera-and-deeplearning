@@ -50,15 +50,26 @@ df = get_data()
 
 st.title("Real-Time Flood Dashboard")
 
+st.markdown('<div style="text-align: justify;">Extreme weather occurs more frequently and has a negative impact on '
+            'urban areas, especially those in developing countries. Nearly every city has access to surveillance '
+            'camera systems, but they lack a smart function that would send an alert in an emergency. As a result, '
+            'we propose a highly scalable intelligent system for alarming street flooding. This system is capable of '
+            'simultaneously producing high-resolution data for future use and sending out high-abstract warning '
+            'signals. The chosen deep convolutional neural network model, MobileNetV2, achieved classification '
+            'accuracy of 89.58% and flood image segmentation accuracy of 95.33%.</div>', unsafe_allow_html=True)
+st.write("\n")
+st.markdown('<div style="text-align: justify;">The developed methodology is provided in <a href="https://dutudn-my.sharepoint.com/:b:/g/personal/102180048_sv1_dut_udn_vn/ESrrWy3LG05EkVv-rJCeKuEB4naemi7RWcyYBjmrPNIUDg?e=SnpPnz">this paper.</a></div>', unsafe_allow_html=True)
+
+st.write("")
 st.write("Last update: " + str(df['timestamp'].max()))
 
-kpi1, kpi2, alert_list = st.columns(3)
+kpi1, kpi2= st.columns(2)
+kpi1.write("### Camera information")
+kpi1.markdown(f'<div style="text-align: justify;">Because of privacy concerns and security camera accessing policies, '
+              f'this demo page can only provide you with <b>{len(pd.unique(df["name"]))} camera site(s)</b> in '
+              f'Danang, as listed in the dataframe below. The author thanks <a href="https://camera.0511.vn/camera.html">Hội Phát Triển Sáng Tạo Đà Nẵng</a> for granting permission to use the cameras.</div>', unsafe_allow_html=True)
 
-kpi1.metric(
-    label='Number of Camera',
-    value=str(len(pd.unique(df["name"])))
-)
-
+kpi1.write("\n")
 kpi1.dataframe(
     pd.unique(df["name"]),
 )
@@ -70,19 +81,21 @@ try:
 except:
     number_of_warning = 0
 
-kpi2.metric(
-    label='Number of Alert',
-    value=number_of_warning,
-)
+kpi2.write("### Alert notation")
 
-with alert_list:
-    st.write("### Alert details..")
-    if number_of_warning <= 0:
-        st.write("There is no flooded event recorded.")
-    else:
-        st.dataframe(current_alert_cam_status)
+kpi2.markdown('<div style="text-align: justify;">This model can generate high-abstract warning signals as well as high-resolution logging data that can be used for a variety of purposes. They are:</div>', unsafe_allow_html=True)
 
-st.write("## Sofi index of cameras")
+kpi2.write("#### 1. Warning Index")
+kpi2.markdown('<div style="text-align: justify;">This is the output of the classification head, which categorizes scenes as (0) no water, (1) water but not affected, (2) not recommend to commute, and (3) dangerous to commute.</div>', unsafe_allow_html=True)
+kpi2.write("\n")
+kpi2.markdown(f'<div style="text-align: justify;">In the last 24 hours, there has been <b>{number_of_warning} camera site(s)</b> having warning index greater than 1.</div>', unsafe_allow_html=True)
+
+kpi2.write("#### 2. Static Observer Flooding Index")
+kpi2.markdown('<div style="text-align: justify;">The static observer flooding index (SOFI) is introduced as a dimensionless proxy for water level fluctuation that can be extracted from segmented images of stationary surveillance cameras. It\'s computed as the below formula:</div>', unsafe_allow_html=True)
+kpi2.write("\n")
+kpi2.markdown(r'''$$SOFI=\frac{\#flooding_{pixels}}{\#total_{pixel}}$$''')
+
+st.write("## Historical SOFIs")
 
 df.sort_values(by=['timestamp'], inplace=True)
 
