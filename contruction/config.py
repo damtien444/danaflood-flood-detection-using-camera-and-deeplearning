@@ -24,7 +24,7 @@ def create_dir(dir):
 input_camera_list = [
     (False, "https://www.youtube.com/watch?v=-y6ql2bacSo", "BENHVIENC"),
     (False, "https://www.youtube.com/watch?v=fiWopDJ3rCs", "NGUYENHUESCHOOL"),
-    (False, "https://www.youtube.com/watch?v=3zH2GwsexiE", "PHUONGTRAN"),
+    (False, "https://www.youtube.com/watch?v=C4D0gp21pQs", "PHUONGTRAN"),
     # (True, r"E:\DATN_local\self_collected_data\4_heavy_flood.mp4", "Fast flood site"),
     # (True, r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4", "CAM_SITE_1"),
     # (True, r"E:\DATN_local\3_DEMO\Site_2 - Made with Clipchamp.mp4", "CAM_SITE_2"),

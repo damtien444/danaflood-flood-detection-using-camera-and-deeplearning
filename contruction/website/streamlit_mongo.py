@@ -39,14 +39,18 @@ def read_current_alert_cam_status(collection):
     return current
 
 
-def get_latest_file_path(folder):
-    images_folder = folder + os.sep + "*"
-    list_of_files = glob.glob(images_folder)  # * means all if need specific format then *.csv
-    latest_file = max(list_of_files, key=os.path.getctime)
-    return latest_file
+def get_current_cam_status(df):
+    current = df.groupby(['name'])['timestamp'].transform(max) == df['timestamp']
+    return df[current]
+
+
+def number_cam_alert(status):
+    return status[df['warning_index']>1]
 
 
 df = get_data()
+current = get_current_cam_status(df)
+alert = number_cam_alert(current)
 
 st.title("Real-Time Flood Dashboard")
 
@@ -67,19 +71,22 @@ kpi1, kpi2= st.columns(2)
 kpi1.write("### Camera information")
 kpi1.markdown(f'<div style="text-align: justify;">Because of privacy concerns and security camera accessing policies, '
               f'this demo page can only provide you with <b>{len(pd.unique(df["name"]))} camera site(s)</b> in '
-              f'Danang, as listed in the dataframe below. The author thanks <a href="https://camera.0511.vn/camera.html">Hội Phát Triển Sáng Tạo Đà Nẵng</a> for granting permission to use the cameras.</div>', unsafe_allow_html=True)
+              f'Danang, as listed in the dataframe below. The author thanks <a '
+              f'href="https://camera.0511.vn/camera.html">Hội Phát Triển Sáng Tạo Đà Nẵng</a> for granting '
+              f'permission to use the cameras.</div>', unsafe_allow_html=True)
 
 kpi1.write("\n")
 kpi1.dataframe(
-    pd.unique(df["name"]),
+    current,
 )
 
-current_alert_cam_status = read_current_alert_cam_status(collection)
-
 try:
-    number_of_warning = len(pd.unique(current_alert_cam_status["name"]))
+    number_of_warning = len(alert)
 except:
     number_of_warning = 0
+kpi1.markdown(f'<div style="text-align: justify;">Curently, there are <b>{number_of_warning} camera site(s)</b> being clasified as not recommend or not safety.</div>', unsafe_allow_html=True)
+
+
 
 kpi2.write("### Alert notation")
 
@@ -88,7 +95,7 @@ kpi2.markdown('<div style="text-align: justify;">This model can generate high-ab
 kpi2.write("#### 1. Warning Index")
 kpi2.markdown('<div style="text-align: justify;">This is the output of the classification head, which categorizes scenes as (0) no water, (1) water but not affected, (2) not recommend to commute, and (3) dangerous to commute.</div>', unsafe_allow_html=True)
 kpi2.write("\n")
-kpi2.markdown(f'<div style="text-align: justify;">In the last 24 hours, there has been <b>{number_of_warning} camera site(s)</b> having warning index greater than 1.</div>', unsafe_allow_html=True)
+
 
 kpi2.write("#### 2. Static Observer Flooding Index")
 kpi2.markdown('<div style="text-align: justify;">The static observer flooding index (SOFI) is introduced as a dimensionless proxy for water level fluctuation that can be extracted from segmented images of stationary surveillance cameras. It\'s computed as the below formula:</div>', unsafe_allow_html=True)
