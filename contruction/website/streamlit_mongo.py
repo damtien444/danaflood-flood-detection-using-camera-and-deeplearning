@@ -103,6 +103,10 @@ fig2 = px.line(data_frame=df, x="timestamp", y='sofi', color='name', markers=Tru
 fig2.update_yaxes(range=[0,1])
 st.write(fig2)
 
+fig2 = px.line(data_frame=df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index")
+fig2.update_yaxes(range=[0,3])
+st.write(fig2)
+
 selection = st.selectbox("Select camsite to see detail predictions", pd.unique(df['name']))
 
 selected_infor = df[df['name'] == selection]
