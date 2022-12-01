@@ -4,11 +4,11 @@ streamlit
 streamlit_autorefresh
 
 # for inference
-opencv-python
-opencv-python-headless
-pymongo
-pafy
-youtube-dl
-albumentations
-segmentation-models-pytorch
-wandb
+# opencv-python
+# opencv-python-headless
+# pymongo
+# pafy
+# youtube-dl
+# albumentations
+# segmentation-models-pytorch
+# wandb
