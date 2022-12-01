@@ -4,9 +4,9 @@ streamlit
 streamlit_autorefresh
 
 # for inference
-# opencv-python
-# opencv-python-headless
-# pymongo
+opencv-python
+opencv-python-headless
+pymongo
 # pafy
 # youtube-dl
 # albumentations
