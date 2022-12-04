@@ -1,16 +1,8 @@
-import glob
-import os
-import time  # to simulate a real time data, time loop
-
-import numpy as np  # np mean, np random
 import pandas as pd  # read csv, df manipulation
 import plotly.express as px  # interactive charts
+import pymongo as pymongo
 import streamlit as st  # 🎈 data web app development
 from streamlit_autorefresh import st_autorefresh
-from datetime import datetime
-import cv2
-import base64
-import pymongo as pymongo
 
 from helper import get_all_log, get_latest_unique_warning, get_last_record
 
@@ -114,7 +106,7 @@ fig2 = px.line(data_frame=df, x="timestamp", y='warning_index', color='name', ma
 fig2.update_yaxes(range=[0,3])
 st.write(fig2)
 
-selection = st.selectbox("Select camsite to see detail predictions", pd.unique(df['name']))
+selection = st.selectbox("Select camsite to see prediction detail", pd.unique(df['name']))
 
 selected_infor = df[df['name'] == selection]
 selected_infor.sort_values(by=['timestamp'], inplace=True,ascending=False)
@@ -128,3 +120,4 @@ with image_place:
 
 with data_place:
     st.dataframe(selected_infor)
+

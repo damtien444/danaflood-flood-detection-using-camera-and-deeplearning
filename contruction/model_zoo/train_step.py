@@ -63,10 +63,10 @@ def check_performance(loader, model,type, mask_loss_fn, cls_loss_fn, device='cud
                 list_targets_m = torch.cat((list_targets_m, targets_m), dim=0)
                 list_targets_c = torch.cat((list_targets_c, targets_c), dim=0)
 
-        acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro")
-        prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro")
-        recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro")
-        conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4)
+        acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+        prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+        recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+        conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4, task='multiclass')
 
         mask_stat_score = smp.metrics.get_stats(list_pred_m.long(), list_targets_m.long(), mode='binary', threshold=0.5)
         acc_m = smp.metrics.accuracy(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
@@ -164,10 +164,10 @@ def train_fn(loader, model, optimizer, mask_loss_fn, cls_loss_fn, scaler, alpha=
         scaler.update()
         loop.set_postfix(loss=loss.item(), loss_mask=mask_loss.item(), loss_cls=cls_loss.item())
 
-    acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro")
-    prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro")
-    recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro")
-    conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4)
+    acc_c = accuracy(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+    prec_c = precision(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+    recall_c = recall(list_pred_c, list_targets_c, num_classes=4, average="macro", task='multiclass')
+    conf_mat_c = confusion_matrix(list_pred_c, list_targets_c, num_classes=4, task='multiclass')
 
     mask_stat_score = smp.metrics.get_stats(list_pred_m.byte(), list_targets_m.byte(), mode='binary', threshold=0.5)
     acc_m = smp.metrics.accuracy(mask_stat_score[0], mask_stat_score[1], mask_stat_score[2], mask_stat_score[3],
