@@ -37,7 +37,7 @@ ENCODER = "mobilenet_v2"
 DEVICE = 'cpu'
 
 # tobe change
-check_point_path = r"/home/damtien440/mobilenet_v2_imagenet_6.pth.tar"
+check_point_path = r"/home/damtien440/mobilenet_v2_imagenet_7.pth.tar"
 # trace_folder = r"E:\DATN_local\2_TORCH_TRACE_MODELS"
 # history_folder = r"E:\DATN_local\2_HISTORY_INFERENCE"
 logging_frequency = 300 #second
@@ -66,7 +66,7 @@ if "my_unet" in ENCODER:
 else:
     model = smp.Unet(encoder_name=ENCODER, classes=1, aux_params=aux_params)
 
-# phải có model eval để batch chạy đúng
+# phải có model.eval() để batch chạy đúng
 load_checkpoint(torch.load(check_point_path, map_location=torch.device(DEVICE)), model )
 model.to(DEVICE)
 transform = get_validation_augmentation()
