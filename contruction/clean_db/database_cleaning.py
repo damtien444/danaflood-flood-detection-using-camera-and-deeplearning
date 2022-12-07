@@ -32,7 +32,7 @@ def get_out_of_caution(collection, dt):
 def save_log(posts: pd.DataFrame, path: str) -> None:
     posts.to_csv(path, index=False)
 
-def data_cleaning_routine(database_uri, database_name, collection_name, caring_days=4):
+def data_cleaning_routine(database_uri, database_name, collection_name, logpath="/home/damtien440/danaflood-flood-detection-using-camera-and-deeplearning/contruction/clean_db", caring_days=4):
     client = pymongo.MongoClient(database_uri)
 
     db = client[database_name]
@@ -51,13 +51,13 @@ def data_cleaning_routine(database_uri, database_name, collection_name, caring_d
 
         curr_timestamp = int(datetime.timestamp(datetime.now()))
 
-        save_log(to_be_delete, str(curr_timestamp)+'.csv')
-        print('saved log at',  str(curr_timestamp)+'.csv')
+        save_log(to_be_delete,  logpath + os.sep + str(curr_timestamp)+'.csv')
+        print('saved log at', logpath + os.sep + str(curr_timestamp)+'.csv')
 
 database_uri = "mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority"
 database_name = 'danang_flood'
 collection_name = 'camera_logging'
-
+log_path = '/home/damtien440/danaflood-flood-detection-using-camera-and-deeplearning/contruction/clean_db'
 if __name__ == '__main__':
-    data_cleaning_routine(database_uri, database_name, collection_name, 4)
+    data_cleaning_routine(database_uri, database_name, collection_name, log_path, 4)
 
