@@ -10,8 +10,8 @@ import segmentation_models_pytorch as smp
 
 from model_zoo.utils import load_checkpoint
 
-os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
-time.tzset()
+# os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
+# time.tzset()
 
 def create_dir(dir):
     if not os.path.isdir(dir):

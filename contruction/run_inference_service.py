@@ -254,6 +254,7 @@ def consumer_runner(model, queue):
                         # dst = cv2.addWeighted(np.array(images[i].permute(1, 2, 0).cpu()).astype(np.uint8), alpha, single_image_mask, 1 - alpha, 0)
 
                         logs[batch_ids[j]].update(sofi.item(), single_image_cls.item())
+
                         if time.time() - logs[batch_ids[j]].start > logging_frequency:
                             print("LOG", logs[batch_ids[j]].start)
                             sofi, cls = logs[batch_ids[j]].get()
