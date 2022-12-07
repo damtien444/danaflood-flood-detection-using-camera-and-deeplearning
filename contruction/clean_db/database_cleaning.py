@@ -40,18 +40,19 @@ def data_cleaning_routine(database_uri, database_name, collection_name, caring_d
 
     dt = datetime.now() - relativedelta(days=caring_days)
     to_be_delete = get_out_of_caution(collection, dt)
-    collection.delete_many(
-        {
-            'timestamp':
-                # same_time
-                {  "$lt": dt}
-    })
-    collection.insert_many(to_be_delete.to_dict('records'))
+    if len(to_be_delete) > 0:
+        collection.delete_many(
+            {
+                'timestamp':
+                    # same_time
+                    {  "$lt": dt}
+        })
+        collection.insert_many(to_be_delete.to_dict('records'))
 
-    curr_timestamp = int(datetime.timestamp(datetime.now()))
+        curr_timestamp = int(datetime.timestamp(datetime.now()))
 
-    save_log(to_be_delete, str(curr_timestamp)+'.csv')
-    print('saved log at',  str(curr_timestamp)+'.csv')
+        save_log(to_be_delete, str(curr_timestamp)+'.csv')
+        print('saved log at',  str(curr_timestamp)+'.csv')
 
 database_uri = "mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority"
 database_name = 'danang_flood'
