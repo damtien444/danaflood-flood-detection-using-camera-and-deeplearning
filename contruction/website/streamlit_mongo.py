@@ -159,7 +159,7 @@ fig1.update_yaxes(range=[0,1])
 #     image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
 #     selected_points = None
 
-# st.write(fig2)
+st.write(fig1)
 
 fig2 = px.line(data_frame=ranged_df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index")
 fig2.update_yaxes(range=[0,3])
@@ -174,6 +174,7 @@ fig2.update_yaxes(range=[0,3])
 #     data_col.write(selected_record)
 #     image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
 #     selected_points = None
+st.write(fig2)
 
 
 
