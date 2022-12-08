@@ -1,10 +1,14 @@
+import datetime
+
 import pandas as pd  # read csv, df manipulation
 import plotly.express as px  # interactive charts
 import pymongo as pymongo
 import streamlit as st  # 🎈 data web app development
+from dateutil.relativedelta import relativedelta
 from streamlit_autorefresh import st_autorefresh
+from streamlit_plotly_events import plotly_events
 
-from helper import get_all_log, get_latest_unique_warning, get_last_record
+from helper import get_all_log, get_latest_unique_warning, get_last_record, get_a_record
 
 client = pymongo.MongoClient(
     "mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority")
@@ -39,7 +43,7 @@ def get_current_cam_status(df):
 def number_cam_alert(status):
     return status[df['warning_index']>1]
 
-
+now = datetime.datetime.now()
 df = get_data()
 current = get_current_cam_status(df)
 alert = number_cam_alert(current)
@@ -94,18 +98,10 @@ kpi2.markdown('<div style="text-align: justify;">The static observer flooding in
 kpi2.write("\n")
 kpi2.markdown(r'''$$SOFI=\frac{\#flooding_{pixels}}{\#total_{pixel}}$$''')
 
-st.write("## Historical SOFIs")
-
-df.sort_values(by=['timestamp'], inplace=True)
-
-fig2 = px.line(data_frame=df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index")
-fig2.update_yaxes(range=[0,1])
-st.write(fig2)
-
-fig2 = px.line(data_frame=df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index")
-fig2.update_yaxes(range=[0,3])
-st.write(fig2)
-
+st.write("### Current cam status")
+st.write("Inference results come in two forms, images and dataframes. On inferenced images, parts having bright white "
+         "color are segmented area clasified as flooded. The dataframe is quite straight forward with each record "
+         "containing name, timestamp, warning index and sofi. The dataframe is ordered backward in time.")
 selection = st.selectbox("Select camsite to see prediction detail", pd.unique(df['name']))
 
 selected_infor = df[df['name'] == selection]
@@ -120,4 +116,62 @@ with image_place:
 
 with data_place:
     st.dataframe(selected_infor)
+
+
+st.write("## Historical timeline")
+
+# st.selectbox()
+st.write("")
+date_range_choice = st.radio("Select date range to see the progress of street flood in",['Last 24 hours', 'Last 3 days'])
+if date_range_choice == 'Last 24 hours':
+    start_date = now - relativedelta(days=1)
+    start_care_df = df['timestamp'].searchsorted(start_date)
+    end_care_df = df['timestamp'].searchsorted(now)
+    ranged_df = df.loc[start_care_df:end_care_df - 1]
+
+elif date_range_choice == 'Last 3 days':
+    start_date = now - relativedelta(days=3)
+    start_care_df = df['timestamp'].searchsorted(start_date)
+    end_care_df = df['timestamp'].searchsorted(now)
+    ranged_df = df.loc[start_care_df:end_care_df - 1]
+st.write("There was an importance database update on 2022/12/07, so that you may observe a big data gap. The camera "
+         "'PHUONGTRAN' had low quality night-time images, we had to ignore that camera, but we still keep its "
+         "previous data for reference purposes. Due to the lack of resources, our system can only store data in "
+         "three-day period.")
+st.write("Tips: When you click any data point, the screen will reset and provide the image and inference details of "
+         "that camera site.")
+
+ranged_df.sort_values(by=['timestamp'], inplace=True)
+
+fig2 = px.line(data_frame=ranged_df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index")
+fig2.update_yaxes(range=[0,1])
+
+selected_points = plotly_events(fig2)
+if selected_points:
+    st.write("Detail of selected datapoint")
+    image_col, data_col = st.columns(2)
+    print(selected_points)
+    selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['sofi'] == selected_points[0]['y'])]
+    selected_record = selected_record.iloc[0]
+    data_col.write(selected_record)
+    image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
+    selected_points = None
+
+# st.write(fig2)
+
+fig2 = px.line(data_frame=ranged_df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index")
+fig2.update_yaxes(range=[0,3])
+
+selected_points = plotly_events(fig2)
+if selected_points:
+    st.write("Detail of selected datapoint")
+    image_col, data_col = st.columns(2)
+    print(selected_points)
+    selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['warning_index'] == selected_points[0]['y'])]
+    selected_record = selected_record.iloc[0]
+    data_col.write(selected_record)
+    image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
+    selected_points = None
+
+
 

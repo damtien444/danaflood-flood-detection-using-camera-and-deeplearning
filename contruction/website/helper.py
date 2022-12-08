@@ -1,11 +1,20 @@
 import base64
+import json
 from datetime import datetime
+import datetime
 from io import BytesIO
 
 import cv2
 import pandas as pd
 from PIL import Image
+from dateutil.relativedelta import relativedelta
 
+
+class PdEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, pd.Timestamp):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
 def image_encoding(cv_image):
     retval, buffer = cv2.imencode('.jpg', cv_image)
@@ -36,8 +45,23 @@ def get_list_cam_log(name, collection, no_id_and_image=True):
     return df
 
 
-def get_all_log(collection, no_id_and_image=True):
+def get_all_log(collection, no_id_and_image=True, start=3, end=-1):
+    start_date = datetime.datetime.now() - relativedelta(days=start)
+    if end == -1:
+        end_date = datetime.datetime.now()
+    else:
+        end_date = datetime.datetime.now() - relativedelta(days=end)
+
+    assert end_date - start_date >= datetime.timedelta(days = 0)
+
     res = collection.aggregate([
+        {
+            '$match': {
+                'timestamp': {"$lt": end_date,
+                              "$gte": start_date}
+                # 'timestamp': same_time
+            }
+        },
         {
             '$project': {
                 'timestamp': 1,
@@ -45,7 +69,7 @@ def get_all_log(collection, no_id_and_image=True):
                 'name': 1,
                 'sofi': 1
             }
-        }
+        },
     ])
 
     df = pd.DataFrame(list(res))
@@ -84,6 +108,25 @@ def get_last_record(name, collection):
         return record
     return res
 
+
+def get_a_record(name, timestamp, collection):
+    result = collection.aggregate([
+        {
+            '$match': {
+                'name': name,
+                'timestamp': timestamp
+            }
+        }, {
+            '$limit': 1
+        }
+    ])
+
+    res = list(result)
+    if len(res) > 0:
+        record = res[0]
+        record['image_b64'] = image_decoding(record['image_b64'])
+        return record
+    return res
 
 def get_latest_unique_warning(collection, no_id_and_image=True):
     result = collection.aggregate([

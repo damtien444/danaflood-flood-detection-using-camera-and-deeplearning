@@ -2,6 +2,7 @@ pandas
 plotly
 streamlit
 streamlit_autorefresh
+streamlit-plotly-events
 
 # for inference
 opencv-python
