@@ -1,5 +1,7 @@
 import datetime
 
+import pytz
+
 import pandas as pd  # read csv, df manipulation
 import plotly.express as px  # interactive charts
 import pymongo as pymongo
@@ -24,10 +26,10 @@ st.set_page_config(
 # read csv from a URL
 
 count = st_autorefresh(interval=60000, key="fizzbuzzcounter")
-
-
+now =  datetime.datetime.utcnow().astimezone(pytz.timezone('Asia/Ho_Chi_Minh'))
+now = now.replace(tzinfo=None)
 def get_data() -> pd.DataFrame:
-    return get_all_log(collection)
+    return get_all_log(now, collection)
 
 
 def read_current_alert_cam_status(collection):
@@ -43,7 +45,7 @@ def get_current_cam_status(df):
 def number_cam_alert(status):
     return status[df['warning_index']>1]
 
-now = datetime.datetime.now()
+
 df = get_data()
 current = get_current_cam_status(df)
 alert = number_cam_alert(current)

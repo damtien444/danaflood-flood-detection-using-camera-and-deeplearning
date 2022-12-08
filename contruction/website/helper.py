@@ -45,12 +45,12 @@ def get_list_cam_log(name, collection, no_id_and_image=True):
     return df
 
 
-def get_all_log(collection, no_id_and_image=True, start=3, end=-1):
-    start_date = datetime.datetime.now() - relativedelta(days=start)
+def get_all_log(now, collection, no_id_and_image=True, start=3, end=-1):
+    start_date = now - relativedelta(days=start)
     if end == -1:
-        end_date = datetime.datetime.now()
+        end_date = now
     else:
-        end_date = datetime.datetime.now() - relativedelta(days=end)
+        end_date = now - relativedelta(days=end)
 
     assert end_date - start_date >= datetime.timedelta(days = 0)
 
