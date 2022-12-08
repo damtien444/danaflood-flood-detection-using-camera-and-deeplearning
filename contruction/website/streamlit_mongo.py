@@ -136,7 +136,7 @@ elif date_range_choice == 'Last 3 days':
     start_care_df = df['timestamp'].searchsorted(start_date)
     end_care_df = df['timestamp'].searchsorted(now)
     ranged_df = df.loc[start_care_df:end_care_df - 1]
-st.write("There was an importance database update on 2022/12/07, so that you may observe a big data gap. The camera "
+st.write("There was an importance database and model update on 2022/12/07, so that you may observe a big data gap. The camera "
          "'PHUONGTRAN' had low quality night-time images, we had to ignore that camera, but we still keep its "
          "previous data for reference purposes. Due to the lack of resources, our system can only store data in "
          "three-day period.")
