@@ -145,10 +145,10 @@ st.write("Tips: When you click any data point, the screen will reset and provide
 
 ranged_df.sort_values(by=['timestamp'], inplace=True)
 
-fig2 = px.line(data_frame=ranged_df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index")
-fig2.update_yaxes(range=[0,1])
+fig1 = px.line(data_frame=ranged_df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index")
+fig1.update_yaxes(range=[0,1])
 
-selected_points = plotly_events(fig2)
+selected_points = plotly_events(fig1)
 if selected_points:
     st.write("Detail of selected datapoint")
     image_col, data_col = st.columns(2)
