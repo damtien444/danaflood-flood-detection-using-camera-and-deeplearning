@@ -145,36 +145,38 @@ st.write("Tips: When you click any data point, the screen will reset and provide
 
 ranged_df.sort_values(by=['timestamp'], inplace=True)
 
-fig1 = px.line(data_frame=ranged_df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index")
+fig1 = px.line(data_frame=ranged_df, x="timestamp", y='sofi', color='name', markers=True, title="Static observer flood index", template="seaborn")
 fig1.update_yaxes(range=[0,1])
+selected_points = plotly_events(fig1)
 
-# selected_points = plotly_events(fig1)
-# if selected_points:
-#     st.write("Detail of selected datapoint")
-#     image_col, data_col = st.columns(2)
-#     print(selected_points)
-#     selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['sofi'] == selected_points[0]['y'])]
-#     selected_record = selected_record.iloc[0]
-#     data_col.write(selected_record)
-#     image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
-#     selected_points = None
+if selected_points:
+    st.write("Detail of selected datapoint")
+    image_col, data_col = st.columns(2)
+    print(selected_points)
+    selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['sofi'] == selected_points[0]['y'])]
+    selected_record = selected_record.iloc[0]
+    data_col.write(selected_record)
+    image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
+    selected_points = None
 
-st.write(fig1)
+# st.write(fig1)
 
-fig2 = px.line(data_frame=ranged_df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index")
+fig2 = px.line(data_frame=ranged_df, x="timestamp", y='warning_index', color='name', markers=True, title="Warning index", template="seaborn")
 fig2.update_yaxes(range=[0,3])
+fig2.update_layout()
+selected_points = plotly_events(fig2)
 
-# selected_points = plotly_events(fig2)
-# if selected_points:
-#     st.write("Detail of selected datapoint")
-#     image_col, data_col = st.columns(2)
-#     print(selected_points)
-#     selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['warning_index'] == selected_points[0]['y'])]
-#     selected_record = selected_record.iloc[0]
-#     data_col.write(selected_record)
-#     image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
-#     selected_points = None
-st.write(fig2)
+if selected_points:
+    st.write("Detail of selected datapoint")
+    image_col, data_col = st.columns(2)
+    print(selected_points)
+    selected_record = ranged_df.loc[(ranged_df['timestamp']==selected_points[0]['x']) & (ranged_df['warning_index'] == selected_points[0]['y'])]
+    selected_record = selected_record.iloc[0]
+    data_col.write(selected_record)
+    image_col.image(get_a_record(selected_record['name'], selected_record['timestamp'], collection)['image_b64'])
+    selected_points = None
+
+# st.write(fig2)
 
 
 
