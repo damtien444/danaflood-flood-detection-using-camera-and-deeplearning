@@ -54,14 +54,14 @@ def get_training_augmentation(is_preprocessing=False):
 
         albu.HorizontalFlip(p=0.5),
         #
-        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.2, p=0.5, border_mode=0),
+        albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=5, shift_limit=0.2, p=0.2, border_mode=0),
         #
-        albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
-        albu.RandomCrop(height=512, width=512, p=0.2),
+        # albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
+        # albu.RandomCrop(height=512, width=512, p=0.2),
         albu.Resize(height=512, width=512),
         #
-        albu.GaussNoise(p=0.5),
-        albu.Perspective(p=0.5),
+        albu.GaussNoise(p=0.1),
+        albu.Perspective(p=0.1),
         #
         albu.OneOf(
             [
@@ -69,7 +69,7 @@ def get_training_augmentation(is_preprocessing=False):
                 albu.RandomBrightness(p=1),
                 albu.RandomGamma(p=1),
             ],
-            p=0.9,
+            p=0.1,
         ),
         #
         albu.OneOf(
@@ -78,7 +78,7 @@ def get_training_augmentation(is_preprocessing=False):
                 albu.Blur(blur_limit=3, p=1),
                 albu.MotionBlur(blur_limit=3, p=1),
             ],
-            p=0.9,
+            p=0.1,
         ),
         #
         albu.OneOf(
@@ -86,7 +86,7 @@ def get_training_augmentation(is_preprocessing=False):
                 albu.RandomContrast(p=1),
                 albu.HueSaturationValue(p=1),
             ],
-            p=0.9,
+            p=0.1,
         ),
 
     ]

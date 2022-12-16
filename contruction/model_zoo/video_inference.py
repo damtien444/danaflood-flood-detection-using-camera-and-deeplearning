@@ -81,7 +81,7 @@ if __name__ == "__main__":
         capture = cv2.VideoCapture(url_fullhd)
 
     else:
-        capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4")
+        capture = cv2.VideoCapture(r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4")
         # capture = cv2.VideoCapture(r"E:\DATN_local\3_DEMO\Site_1 - Made with Clipchamp (1).mp4")
         # capture = cv2.VideoCapture(0)
         # capture = cv2.VideoCapture(r"E:\DATN_local\self_collected_data\2_timelapse_28092022.mp4")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         cnt = 0
         max_length = 1000
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(f'demo_{ENCODER}_heaviflood.avi', fourcc, 25, (int(width), int(height)))
+        video = cv2.VideoWriter(f'demo_{ENCODER}_streetflood_1.avi', fourcc, 50, (int(width), int(height)))
 
     with torch.no_grad():
         while True:
