@@ -34,8 +34,8 @@ input_camera_list = [
 # names = ["STREET_FLOOD", "LIVE"]
 files = [r"E:\DATN_local\self_collected_data\0_extracted_DANANG_STREET_FLOOD_Media1.mp4", r"E:\DATN_local\self_collected_data\1_live_record_video_092022.mp4"]
 ENCODER = "mobilenet_v2"
-# DEVICE = 'cpu'
-DEVICE = 'cuda'
+DEVICE = 'cpu'
+# DEVICE = 'cuda'
 
 # tobe change
 check_point_path = r"/home/damtien440/mobilenet_v2_imagenet_7.pth.tar"
