@@ -51,8 +51,8 @@ def data_cleaning_routine(database_uri, database_name, collection_name, logpath=
 
         curr_timestamp = int(datetime.timestamp(datetime.now()))
 
-        save_log(to_be_delete,  logpath + os.sep + str(curr_timestamp)+'.csv')
-        print('saved log at', logpath + os.sep + str(curr_timestamp)+'.csv')
+        # save_log(to_be_delete,  logpath + os.sep + str(curr_timestamp)+'.csv')
+        # print('saved log at', logpath + os.sep + str(curr_timestamp)+'.csv')
 
 database_uri = "mongodb+srv://FLOODING_PROTOTYPE:FLOODING@cluster0.v1qjbym.mongodb.net/?retryWrites=true&w=majority"
 database_name = 'danang_flood'
