@@ -42,7 +42,7 @@ check_point_path = r"/home/damtien440/mobilenet_v2_imagenet_7.pth.tar"
 # check_point_path = r"E:\DATN_local\1_IN_USED_CHECKPOINTS\mobilenet_v2_imagenet_8.pth.tar"
 # trace_folder = r"E:\DATN_local\2_TORCH_TRACE_MODELS"
 # history_folder = r"E:\DATN_local\2_HISTORY_INFERENCE"
-logging_frequency = 10 #second
+logging_frequency = 300 #second
 batch_process_size = 2
 
 
